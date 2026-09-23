@@ -23,12 +23,12 @@
 - [x] Frontend `typecheck` script, run in CI
 - [x] Docker build step in CI
 
-### Still to do for Phase 0
+### Foundation items
 - [x] Verify `docker build` succeeds
 - [x] Flyway added, first migration, `ddl-auto: validate`
 - [x] Environment variable structure (`.env.example`, config via env vars)
 - [x] Module package structure (auth, fitness, weight, goals, tasks, habits, calendar, reminders, notifications, dsa, analytics)
-- [ ] API conventions (`/api/v1`, naming, pagination, dates)
+- [x] API conventions written down in [api-conventions.md](../api-conventions.md)
 - [x] Standard error-response format and global exception handler
 - [x] Backend integration test against real PostgreSQL (Testcontainers)
 - [x] Frontend calls the backend health endpoint (frontend, backend, DB verified end to end)
@@ -44,4 +44,3 @@ Frontend calls Spring Boot, which reads from PostgreSQL through a Flyway-managed
 - Testcontainers is pinned to 1.21.4 in `pom.xml`; the Spring Boot default (1.19.8) cannot talk to current Docker engines.
 - Local JDK is 25, project target is 21 (CI uses 21). Locally, tests need `-DargLine=-Dnet.bytebuddy.experimental=true` because Mockito cannot mock on JDK 25. Installing JDK 21 removes this need (Homebrew install failed on a network error).
 - Migration validation in CI is covered by `DatabaseMigrationTest`, which applies Flyway to a real PostgreSQL and runs Hibernate with `ddl-auto: validate`.
-- API conventions are not yet written down; only the error format exists in code.
