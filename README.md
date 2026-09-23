@@ -45,7 +45,7 @@ Each module owns its domain logic and persistence boundaries while sharing the s
 - Java 21
 - Maven is optional; use the wrapper (`./mvnw`)
 - Docker + Docker Compose
-- Node.js 22+
+- Node.js 24+
 - npm
 
 ### Start infrastructure

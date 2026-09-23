@@ -33,7 +33,7 @@
 - [x] Backend integration test against real PostgreSQL (Testcontainers)
 - [x] Frontend calls the backend health endpoint (frontend, backend, DB verified end to end)
 - [x] Migration validation in CI
-- [ ] Git remote added and pull request opened
+- [x] Git remote added and pull request opened
 
 ## Definition of done
 
