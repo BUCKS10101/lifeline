@@ -33,8 +33,20 @@ spring:
           starttls:
             enable: false
 
+  session:
+    timeout: 7d
+    redis:
+      # Indexed repository lets us find and revoke every session of a user.
+      repository-type: indexed
+
 server:
   port: 8080
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
 
 management:
   endpoints:
@@ -47,4 +59,7 @@ management:
 
 app:
   cors:
-    allowed-origins: http://localhost:3000
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  mail:
+    from: ${MAIL_FROM:no-reply@personal-os.local}

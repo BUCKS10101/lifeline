@@ -1,4 +1,4 @@
-import { getBackendHealth } from "@/lib/api";
+import { getBackendHealth } from "@/lib/backend";
 
 export async function BackendStatus() {
   const health = await getBackendHealth();
