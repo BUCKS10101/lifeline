@@ -35,18 +35,20 @@
 
 ## Frontend checklist
 
-- [ ] Read the relevant Next.js guides in `node_modules/next/dist/docs/` first
-- [ ] API client with CSRF handling and credentials
-- [ ] `/register`, `/verify-email`, `/login`, `/forgot-password`, `/reset-password` pages
-- [ ] Protected dashboard route that redirects to login
-- [ ] Logout
-- [ ] `/api` proxy rewrite to the backend
+- [x] Read the relevant Next.js guides in `node_modules/next/dist/docs/` first
+- [x] API client with CSRF handling and credentials
+- [x] `/register`, `/verify-email`, `/login`, `/forgot-password`, `/reset-password` pages
+- [x] Protected dashboard route that redirects to login
+- [x] Logout
+- [x] `/api` proxy rewrite to the backend
 
 ## Notes
 
 - Verified end to end over real HTTP (register, Mailhog email, verify, login, `/me`, logout, CORS preflight), not only through MockMvc.
 - Spring Boot 3.3 defaults to the non-indexed Redis session repository; `repository-type: indexed` is required to revoke sessions by user.
 - Tests share one PostgreSQL and one Redis container (`AbstractIntegrationTest`).
+
+- Frontend verified through the Next.js origin (proxy, cookie, protected-page redirects) with curl, and login/register pages checked visually in headless Chrome. The forms' click-through behaviour in a real browser is not yet covered by an automated test; Playwright end-to-end tests come in Phase 10.
 
 ## Out of scope
 
