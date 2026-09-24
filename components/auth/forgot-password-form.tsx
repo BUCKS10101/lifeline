@@ -34,7 +34,7 @@ export function ForgotPasswordForm() {
       {error && <Notice kind="error">{error}</Notice>}
       <Field label="Email" name="email" type="email" autoComplete="email" required />
       <SubmitButton pending={pending}>Send reset link</SubmitButton>
-      <Link href="/login" className="text-sm text-zinc-600 underline dark:text-zinc-400">Back to log in</Link>
+      <Link href="/login" className="text-sm text-muted-foreground underline">Back to log in</Link>
     </form>
   );
 }

@@ -1,31 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { apiPost, resetCsrf } from "@/lib/client-api";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useLogout } from "./use-logout";
 
-export function LogoutButton() {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function logout() {
-    setPending(true);
-    try {
-      await apiPost("/api/v1/auth/logout");
-    } finally {
-      resetCsrf();
-      router.push("/login");
-      router.refresh();
-    }
-  }
-
+export function LogoutButton({ className }: { className?: string }) {
+  const { logout, pending } = useLogout();
   return (
-    <button
-      onClick={logout}
-      disabled={pending}
-      className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm disabled:opacity-50 dark:border-zinc-700"
-    >
+    <Button variant="outline" onClick={logout} disabled={pending} className={className}>
+      <LogOut aria-hidden />
       Log out
-    </button>
+    </Button>
   );
 }

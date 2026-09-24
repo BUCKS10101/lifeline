@@ -42,5 +42,6 @@ Frontend calls Spring Boot, which reads from PostgreSQL through a Flyway-managed
 ## Notes
 
 - Testcontainers is pinned to 1.21.4 in `pom.xml`; the Spring Boot default (1.19.8) cannot talk to current Docker engines.
-- Local JDK is 25, project target is 21 (CI uses 21). Locally, tests need `-DargLine=-Dnet.bytebuddy.experimental=true` because Mockito cannot mock on JDK 25. Installing JDK 21 removes this need (Homebrew install failed on a network error).
+- Local tests run on Java 21, the project target (`java.version` in `pom.xml`, and the Java version CI uses). No extra Maven or Mockito flags are needed on JDK 21; `./mvnw test` is the same command CI runs. Newer JDKs such as 25 are not supported by the Mockito/Byte Buddy versions Spring Boot 3.3 manages.
+- Testcontainers needs a running Docker. On Docker Desktop for Mac the socket is per-user, so if it cannot find Docker, run the tests with `DOCKER_HOST=unix://$HOME/.docker/run/docker.sock ./mvnw test`.
 - Migration validation in CI is covered by `DatabaseMigrationTest`, which applies Flyway to a real PostgreSQL and runs Hibernate with `ddl-auto: validate`.

@@ -4,9 +4,9 @@ Built one phase at a time. Each phase has its own file with a goal, a checklist 
 
 | Milestone | Phase | Title | Status |
 |-----------|-------|-------|--------|
-| 1 Foundation | 0 | [Architecture and project setup](phase-00-setup.md) | Done, pending merge |
-| 1 Foundation | 1 | [Authentication and user system](phase-01-auth.md) | In progress |
-| 2 Core product | 2 | Core dashboard and app shell | Not started |
+| 1 Foundation | 0 | [Architecture and project setup](phase-00-setup.md) | Done |
+| 1 Foundation | 1 | [Authentication and user system](phase-01-auth.md) | Done |
+| 2 Core product | 2 | [Core dashboard and app shell](phase-02-shell.md) | Implemented, awaiting review |
 | 2 Core product | 3 | Fitness and workout system | Not started |
 | 2 Core product | 4 | Weight and fitness analytics | Not started |
 | 3 Personal OS | 5 | Tasks, goals and habits | Not started |

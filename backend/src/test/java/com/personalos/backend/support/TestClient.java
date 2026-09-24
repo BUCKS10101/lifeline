@@ -37,6 +37,17 @@ public class TestClient {
         return perform(withBody(MockMvcRequestBuilders.post(path), body).header(csrfHeader, csrfToken));
     }
 
+    /** PATCH with a valid CSRF token, fetching one first if needed. */
+    public MvcResult patch(String path, Object body) throws Exception {
+        if (csrfToken == null) fetchCsrf();
+        return perform(withBody(MockMvcRequestBuilders.patch(path), body).header(csrfHeader, csrfToken));
+    }
+
+    /** PATCH without any CSRF token. */
+    public MvcResult patchWithoutCsrf(String path, Object body) throws Exception {
+        return perform(withBody(MockMvcRequestBuilders.patch(path), body));
+    }
+
     /** POST without any CSRF token. */
     public MvcResult postWithoutCsrf(String path, Object body) throws Exception {
         return perform(withBody(MockMvcRequestBuilders.post(path), body));

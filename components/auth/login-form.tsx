@@ -32,7 +32,7 @@ export function LoginForm() {
       <Field label="Email" name="email" type="email" autoComplete="email" required />
       <Field label="Password" name="password" type="password" autoComplete="current-password" required />
       <SubmitButton pending={pending}>Log in</SubmitButton>
-      <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="flex justify-between text-sm text-muted-foreground">
         <Link href="/forgot-password" className="underline">Forgot password?</Link>
         <Link href="/register" className="underline">Create account</Link>
       </div>

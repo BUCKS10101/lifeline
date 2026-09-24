@@ -16,6 +16,9 @@ public class UserProfile {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    @Column(nullable = false)
+    private String timezone;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -25,9 +28,10 @@ public class UserProfile {
     protected UserProfile() {
     }
 
-    public UserProfile(UUID userId, String displayName) {
+    public UserProfile(UUID userId, String displayName, String timezone) {
         this.userId = userId;
         this.displayName = displayName;
+        this.timezone = timezone;
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
     }
@@ -39,4 +43,8 @@ public class UserProfile {
 
     public UUID getUserId() { return userId; }
     public String getDisplayName() { return displayName; }
+    public String getTimezone() { return timezone; }
+
+    public void rename(String displayName) { this.displayName = displayName; }
+    public void changeTimezone(String timezone) { this.timezone = timezone; }
 }

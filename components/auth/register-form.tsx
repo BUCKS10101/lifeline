@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { apiPost } from "@/lib/client-api";
+import { detectTimezone } from "@/lib/timezones";
 import { errorMessage, fieldErrors, Field, Notice, SubmitButton } from "./ui";
 
 export function RegisterForm() {
@@ -22,6 +23,7 @@ export function RegisterForm() {
         displayName: form.get("displayName"),
         email: form.get("email"),
         password: form.get("password"),
+        timezone: detectTimezone(),
       });
       setDone(true);
     } catch (e) {
@@ -52,7 +54,7 @@ export function RegisterForm() {
         error={errors.password}
       />
       <SubmitButton pending={pending}>Create account</SubmitButton>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         Already registered? <Link href="/login" className="underline">Log in</Link>
       </p>
     </form>

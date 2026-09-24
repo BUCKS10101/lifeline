@@ -8,6 +8,7 @@ import com.personalos.backend.auth.dto.AuthDtos.RegisterRequest;
 import com.personalos.backend.auth.dto.AuthDtos.UserResponse;
 import com.personalos.backend.auth.email.EmailSender;
 import com.personalos.backend.common.error.ApiException;
+import com.personalos.backend.common.validation.Timezones;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -69,7 +70,8 @@ public class AuthService {
                     return null;
                 }
                 User user = users.saveAndFlush(new User(email, hash));
-                profiles.save(new UserProfile(user.getId(), request.displayName().trim()));
+                profiles.save(new UserProfile(user.getId(), request.displayName().trim(),
+                        Timezones.orDefault(request.timezone())));
                 return issueToken(user.getId(), EmailTokenType.VERIFY_EMAIL, VERIFY_TTL);
             });
         } catch (DataIntegrityViolationException e) {
@@ -121,8 +123,11 @@ public class AuthService {
     public UserResponse currentUser(UUID userId) {
         User user = users.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "Not authenticated"));
-        String displayName = profiles.findById(userId).map(UserProfile::getDisplayName).orElse("");
-        return new UserResponse(user.getId(), user.getEmail(), displayName, user.isEmailVerified());
+        UserProfile profile = profiles.findById(userId).orElse(null);
+        return new UserResponse(user.getId(), user.getEmail(),
+                profile == null ? "" : profile.getDisplayName(),
+                profile == null ? Timezones.DEFAULT : profile.getTimezone(),
+                user.isEmailVerified());
     }
 
     private String issueToken(UUID userId, EmailTokenType type, Duration ttl) {

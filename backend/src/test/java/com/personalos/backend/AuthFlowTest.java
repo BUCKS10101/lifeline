@@ -40,7 +40,7 @@ class AuthFlowTest extends AbstractIntegrationTest {
 
     private void register() throws Exception {
         assertThat(client.post("/api/v1/auth/register",
-                new RegisterRequest(EMAIL, PASSWORD, "Gov")).getResponse().getStatus()).isEqualTo(202);
+                new RegisterRequest(EMAIL, PASSWORD, "Gov", null)).getResponse().getStatus()).isEqualTo(202);
     }
 
     private void registerAndVerify() throws Exception {
@@ -98,7 +98,7 @@ class AuthFlowTest extends AbstractIntegrationTest {
     void duplicateRegistrationLooksIdenticalAndCreatesNoSecondAccount() throws Exception {
         register();
         emails.clear();
-        var again = client.post("/api/v1/auth/register", new RegisterRequest(EMAIL, PASSWORD, "Other"));
+        var again = client.post("/api/v1/auth/register", new RegisterRequest(EMAIL, PASSWORD, "Other", null));
         assertThat(again.getResponse().getStatus()).isEqualTo(202);
         assertThat(emails.last().subject()).contains("already have an account");
         assertThat(jdbc.queryForObject("select count(*) from users", Integer.class)).isEqualTo(1);
@@ -117,7 +117,7 @@ class AuthFlowTest extends AbstractIntegrationTest {
 
     @Test
     void mutatingRequestWithoutCsrfTokenIsRejected() throws Exception {
-        var result = client.postWithoutCsrf("/api/v1/auth/register", new RegisterRequest(EMAIL, PASSWORD, "Gov"));
+        var result = client.postWithoutCsrf("/api/v1/auth/register", new RegisterRequest(EMAIL, PASSWORD, "Gov", null));
         assertThat(result.getResponse().getStatus()).isEqualTo(403);
         assertThat(client.json(result).get("code").asText()).isEqualTo("CSRF_TOKEN_INVALID");
         assertThat(jdbc.queryForObject("select count(*) from users", Integer.class)).isZero();
@@ -132,7 +132,7 @@ class AuthFlowTest extends AbstractIntegrationTest {
 
     @Test
     void validationErrorsListTheOffendingFields() throws Exception {
-        var result = client.post("/api/v1/auth/register", new RegisterRequest("not-an-email", "short", ""));
+        var result = client.post("/api/v1/auth/register", new RegisterRequest("not-an-email", "short", "", null));
         assertThat(result.getResponse().getStatus()).isEqualTo(400);
         var body = client.json(result);
         assertThat(body.get("code").asText()).isEqualTo("VALIDATION_FAILED");
