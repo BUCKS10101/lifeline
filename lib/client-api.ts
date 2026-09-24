@@ -32,27 +32,43 @@ async function toError(res: Response): Promise<ApiRequestError> {
   }
 }
 
-async function send(path: string, body: unknown, token: Csrf): Promise<Response> {
+async function send(method: string, path: string, body: unknown, token: Csrf): Promise<Response> {
   return fetch(path, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json", [token.headerName]: token.token },
     body: JSON.stringify(body ?? {}),
   });
 }
 
-export async function apiPost<T = unknown>(path: string, body?: unknown): Promise<T> {
-  let res = await send(path, body, csrf ?? (await loadCsrf()));
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  let res = await send(method, path, body, csrf ?? (await loadCsrf()));
 
   // The CSRF token is rotated on logout and can go stale; fetch a fresh one and retry once.
   if (res.status === 403) {
     const error = await toError(res.clone());
     if (error.code === "CSRF_TOKEN_INVALID") {
-      res = await send(path, body, await loadCsrf());
+      res = await send(method, path, body, await loadCsrf());
     }
+  }
+
+  // A 401 outside the auth endpoints means the session ended (expired, or revoked by a password
+  // reset). Login itself also returns 401 for wrong credentials, so it is excluded.
+  if (res.status === 401 && !path.startsWith("/api/v1/auth/")) {
+    // Intentional full page load: it also drops any client-side state from the ended session.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/login";
   }
 
   if (!res.ok) throw await toError(res);
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+}
+
+export function apiPost<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request<T>("POST", path, body);
+}
+
+export function apiPatch<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request<T>("PATCH", path, body);
 }
 
 export function resetCsrf() {
