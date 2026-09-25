@@ -67,6 +67,26 @@ export function apiPost<T = unknown>(path: string, body?: unknown): Promise<T> {
   return request<T>("POST", path, body);
 }
 
+export function apiPut<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request<T>("PUT", path, body);
+}
+
+/** DELETE has no body; the CSRF token is still sent. */
+export function apiDelete(path: string): Promise<void> {
+  return request<void>("DELETE", path);
+}
+
+/** Reads need no CSRF token. Returns undefined for a 204. */
+export async function apiGet<T>(path: string): Promise<T | undefined> {
+  const res = await fetch(path, { cache: "no-store" });
+  if (res.status === 401) {
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/login";
+  }
+  if (!res.ok) throw await toError(res);
+  return res.status === 204 ? undefined : ((await res.json()) as T);
+}
+
 export function apiPatch<T = unknown>(path: string, body?: unknown): Promise<T> {
   return request<T>("PATCH", path, body);
 }

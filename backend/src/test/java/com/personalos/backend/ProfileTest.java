@@ -38,7 +38,7 @@ class ProfileTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void reset() {
-        jdbc.execute("truncate table users cascade");
+        jdbc.execute("delete from users"); // FK cascades remove the users' data; built-in exercises and templates (no owner) must survive
         emails.clear();
     }
 

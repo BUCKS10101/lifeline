@@ -3,6 +3,7 @@ package com.personalos.backend.support;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -46,6 +47,25 @@ public class TestClient {
     /** PATCH without any CSRF token. */
     public MvcResult patchWithoutCsrf(String path, Object body) throws Exception {
         return perform(withBody(MockMvcRequestBuilders.patch(path), body));
+    }
+
+    public MvcResult put(String path, Object body) throws Exception {
+        return call(HttpMethod.PUT, path, body, true);
+    }
+
+    public MvcResult delete(String path) throws Exception {
+        return call(HttpMethod.DELETE, path, null, true);
+    }
+
+    /** Any method, with or without the CSRF token. A {@code null} body sends none. */
+    public MvcResult call(HttpMethod method, String path, Object body, boolean withCsrf) throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, path);
+        if (body != null) builder = withBody(builder, body);
+        if (withCsrf) {
+            if (csrfToken == null) fetchCsrf();
+            builder = builder.header(csrfHeader, csrfToken);
+        }
+        return perform(builder);
     }
 
     /** POST without any CSRF token. */
