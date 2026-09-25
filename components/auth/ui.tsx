@@ -79,3 +79,18 @@ export function fieldErrors(error: unknown): Record<string, string> {
 export function errorMessage(error: unknown): string {
   return error instanceof ApiRequestError ? error.message : "Could not reach the server";
 }
+
+export function TextareaField(
+  props: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: string },
+) {
+  const { label, error, ...textarea } = props;
+  return (
+    <FieldShell label={label} error={error}>
+      <textarea
+        {...textarea}
+        aria-invalid={error ? true : undefined}
+        className={`${controlClass} min-h-24 py-2 text-base`}
+      />
+    </FieldShell>
+  );
+}

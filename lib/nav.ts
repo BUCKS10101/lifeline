@@ -21,7 +21,7 @@ export type NavItem = {
 /** Single source for the sidebar and the mobile drawer. Only add an href once the page really exists. */
 export const MAIN_NAV: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Fitness", icon: Dumbbell },
+  { label: "Fitness", icon: Dumbbell, href: "/fitness" },
   { label: "Weight", icon: Scale },
   { label: "Tasks", icon: ListChecks },
   { label: "Habits", icon: Flame },

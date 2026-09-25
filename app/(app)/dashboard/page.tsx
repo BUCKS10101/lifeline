@@ -1,6 +1,7 @@
-import { CalendarDays, Code, Dumbbell, Flame, ListChecks, Scale, Target } from "lucide-react";
+import { CalendarDays, Code, Flame, ListChecks, Scale, Target } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { EmptyCard } from "@/components/dashboard/empty-card";
+import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
 import { requireUser } from "@/lib/backend";
 import { formatToday, greeting } from "@/lib/timezones";
 
@@ -24,12 +25,7 @@ export default async function DashboardPage() {
       <section aria-labelledby="today-heading" className="flex flex-col gap-3">
         <h2 id="today-heading" className="text-sm font-medium text-muted-foreground">Today</h2>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <EmptyCard
-            icon={Dumbbell}
-            title="Today's workout"
-            description="Your planned session and its exercises."
-            module="Fitness"
-          />
+          <TodaysWorkoutCard timezone={user.timezone} />
           <EmptyCard
             icon={ListChecks}
             title="Tasks due"

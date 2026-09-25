@@ -3,6 +3,7 @@ package com.personalos.backend.common.error;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -31,6 +33,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return build(ex.getStatus(), ex.getCode(), ex.getMessage(), request.getRequestURI(), List.of());
     }
 
+    /** Backstop for constraint violations the services did not anticipate, such as a lost race. */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleConflict(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.warn("Data integrity violation on {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
+        return build(HttpStatus.CONFLICT, "CONFLICT", "The request conflicts with the current state",
+                request.getRequestURI(), List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception on {}", request.getRequestURI(), ex);
@@ -44,6 +54,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   WebRequest request) {
         List<ApiError.FieldViolation> violations = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> new ApiError.FieldViolation(e.getField(), e.getDefaultMessage()))
+                .toList();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                apiError(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request validation failed",
+                        path(request), violations));
+    }
+
+    /** Constraint annotations on query parameters, such as {@code @Max(100) size}. */
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex,
+                                                                            HttpHeaders headers, HttpStatusCode status,
+                                                                            WebRequest request) {
+        List<ApiError.FieldViolation> violations = ex.getAllValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream()
+                        .map(error -> new ApiError.FieldViolation(
+                                result.getMethodParameter().getParameterName(), error.getDefaultMessage())))
                 .toList();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 apiError(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request validation failed",

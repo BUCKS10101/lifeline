@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Service
@@ -19,6 +21,15 @@ public class ProfileService {
     public ProfileService(UserProfileRepository profiles, AuthService authService) {
         this.profiles = profiles;
         this.authService = authService;
+    }
+
+    /**
+     * The user's timezone. This is the one thing other modules (fitness) may ask auth for; they never
+     * see auth's entities or repositories. Falls back to UTC if the profile is missing.
+     */
+    @Transactional(readOnly = true)
+    public ZoneId timezoneOf(UUID userId) {
+        return profiles.findById(userId).map(p -> ZoneId.of(p.getTimezone())).orElse(ZoneOffset.UTC);
     }
 
     /** Updates the profile of the given user. The caller passes the authenticated user's id, never one from the request. */
