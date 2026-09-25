@@ -393,7 +393,12 @@ class WorkoutLifecycleTest extends FitnessApiTest {
                 Map.of("id", aliceSet, "weightKg", new BigDecimal("50"), "reps", 5)), 409);
 
         assertThat(error.get("code").asText()).isEqualTo("CONFLICT");
-        assertThat(error.toString()).doesNotContain("60");
+        // The reply must say nothing about the set that already exists. Checked structurally: a substring test on
+        // "60" would also match digits inside the random ids and the timestamp in the error body.
+        assertThat(error.get("message").asText()).isEqualTo("This set id is already in use");
+        assertThat(error.get("violations")).isEmpty();
+        assertThat(error.toString()).doesNotContain("weightKg").doesNotContain("setNumber")
+                .doesNotContain(aliceWorkout).doesNotContain(aliceWe).doesNotContain(aliceSet);
         assertThat(getWorkout(bob, bobWorkout).get("exercises").get(0).get("sets")).isEmpty();
         assertThat(getWorkout(alice, aliceWorkout).get("exercises").get(0).get("sets")).hasSize(1);
 
