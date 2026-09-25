@@ -21,6 +21,6 @@ class DatabaseMigrationTest extends AbstractIntegrationTest {
         Integer applied = jdbc.queryForObject(
                 "select count(*) from flyway_schema_history where success", Integer.class);
         assertThat(failed).isZero();
-        assertThat(applied).isEqualTo(5);
+        assertThat(applied).isEqualTo(6);
     }
 }

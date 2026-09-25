@@ -1,6 +1,7 @@
 package com.personalos.backend.fitness;
 
 import com.personalos.backend.common.error.ApiException;
+import static com.personalos.backend.support.Concurrent.runTogether;
 import com.personalos.backend.fitness.dto.WorkoutDtos.CreateSetRequest;
 import com.personalos.backend.fitness.dto.WorkoutDtos.StartWorkoutRequest;
 import org.junit.jupiter.api.Test;
@@ -21,35 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WorkoutConcurrencyTest extends FitnessApiTest {
 
     @Autowired WorkoutService workoutService;
-
-    /** Runs all tasks at the same moment; each result is either the returned value or the thrown exception. */
-    private static List<Object> runTogether(List<Callable<Object>> tasks) throws Exception {
-        // One thread per task, so every task can wait at the start gate together.
-        ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
-        CountDownLatch ready = new CountDownLatch(tasks.size());
-        CountDownLatch go = new CountDownLatch(1);
-        try {
-            List<Future<Object>> futures = new ArrayList<>();
-            for (Callable<Object> task : tasks) {
-                futures.add(pool.submit(() -> {
-                    ready.countDown();
-                    go.await();
-                    try {
-                        return task.call();
-                    } catch (Exception e) {
-                        return e;
-                    }
-                }));
-            }
-            ready.await();
-            go.countDown();
-            List<Object> results = new ArrayList<>();
-            for (Future<Object> future : futures) results.add(future.get(60, TimeUnit.SECONDS));
-            return results;
-        } finally {
-            pool.shutdownNow();
-        }
-    }
 
     private static long count(List<Object> results, java.util.function.Predicate<Object> test) {
         return results.stream().filter(test).count();
