@@ -156,7 +156,7 @@ Filled in when implementation starts.
 
 - [x] Checkpoint 0: browser-check tooling (PR #7)
 - [x] Checkpoint 1: schema and weight entries
-- [ ] Checkpoint 2: weight analytics
+- [x] Checkpoint 2: weight analytics
 - [ ] Checkpoint 3: fitness analytics
 - [ ] Checkpoint 4: chart foundation and `/weight`
 - [ ] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
@@ -171,3 +171,13 @@ Filled in when implementation starts.
 - `PUT` replaces the whole entry, so omitting `notes` clears it. Recorded in `docs/api-conventions.md`.
 - Test infrastructure: the generic setup moved from `FitnessApiTest` into `support/ApiTestBase`, and the parallel runner into `support/Concurrent`, so weight tests do not extend a fitness class. No fitness test changed.
 - Tests: 78 new (schema 30, API 44, concurrency 4). Two deliberate mutations (ignore the user's timezone; always report "created") were each caught by the intended tests. Full suite: 379 of 379.
+
+## Checkpoint 2 notes
+
+- Endpoints: `GET /api/v1/weight/series`, `GET /api/v1/weight/summary`, and `GET`/`PUT`/`DELETE /api/v1/weight/target`. Everything is derived at read time from the entries; only the target is stored. Plain SQL (`JdbcClient`) is used for the derived queries and the target upsert, with no extra JPA entity.
+- **Series** defaults to `DAILY` over the last 90 days ending today (the user's timezone). Daily points carry `trendKg`, the mean of the entries in the 7 calendar days ending that day, computed over all entries so the first point in range still sees earlier days. `WEEKLY` (ISO, Monday start) and `MONTHLY` points summarise only entries inside the requested range.
+- **Target PUT** is idempotent: repeating the same value keeps `startedOn`; a different value restarts the goal at today. **Target DELETE** returns 404 when there is nothing to delete.
+- **Starting weight** is not stored: it is the latest reading on or before `startedOn`, else the first reading after it. A reading logged on the same day the goal starts is therefore the start. Editing an old entry can change the start and flip the direction (LOSE ↔ GAIN); this is tested.
+- **Progress** (`TargetProgress`, pure): moving away from the target is 0%, passing it is 100% and `reached`, and MAINTAIN (target equals start) has a null percentage.
+- **Change windows** (7 and 30 days) are anchored to the latest entry's date, not to today: the baseline is the latest entry on or before `latest - N days`, and is null when there is none that old. **Week averages** use the ISO weeks containing today and the week before.
+- Tests: `TargetProgressTest` (6), `WeightAnalyticsApiTest` (20). Full backend suite: 405 passing.
