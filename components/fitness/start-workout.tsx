@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Play } from "lucide-react";
 import { Notice } from "@/components/auth/ui";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeading } from "@/components/fitness/ui";
 import { apiGet, apiPost, ApiRequestError } from "@/lib/client-api";
 import type { TemplateSummary, WorkoutDetail } from "@/lib/fitness-types";
 import { pluralize } from "@/lib/format";
@@ -48,7 +47,7 @@ export function StartWorkout({ templates }: { templates: TemplateSummary[] }) {
         </Notice>
       )}
 
-      <Button size="lg" className="h-14 justify-start text-base" variant="outline" disabled={pending !== null}
+      <Button size="lg" className="h-14 justify-start px-4 text-base font-medium" variant="outline" disabled={pending !== null}
         onClick={() => start("empty", {})}>
         <Play aria-hidden />{pending === "empty" ? "Starting..." : "Empty workout"}
       </Button>
@@ -69,25 +68,23 @@ function TemplateGroup({ title, templates, pending, onStart }: {
 }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <SectionHeading>{title}</SectionHeading>
+      <ul className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card">
         {templates.map((t) => (
-          <Card key={t.id}>
-            <CardContent className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-1">
-                <span className="truncate font-medium">{t.name}</span>
-                <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {pluralize(t.exerciseCount, "exercise")}
-                  {t.builtIn && <Badge variant="secondary">Built-in</Badge>}
-                </span>
-              </div>
-              <Button className="h-11 shrink-0 px-4" disabled={pending !== null} onClick={() => onStart(t.id)}>
-                {pending === t.id ? "Starting..." : "Start"}
-              </Button>
-            </CardContent>
-          </Card>
+          <li key={t.id} className="flex min-h-16 items-center justify-between gap-3 px-4 py-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate font-semibold">{t.name}</span>
+              <span className="num flex items-center gap-2 text-sm text-muted-foreground">
+                {pluralize(t.exerciseCount, "exercise")}
+                {t.builtIn && <span className="rounded border px-1.5 text-xs font-medium">Built-in</span>}
+              </span>
+            </div>
+            <Button className="h-11 shrink-0 px-5 font-semibold" disabled={pending !== null} onClick={() => onStart(t.id)}>
+              {pending === t.id ? "Starting..." : "Start"}
+            </Button>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

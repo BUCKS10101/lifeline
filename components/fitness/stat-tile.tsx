@@ -1,8 +1,11 @@
-export function StatTile({ label, value }: { label: string; value: string }) {
+export function StatTile({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xl font-semibold tracking-tight">{value}</span>
+    <div className="flex flex-col gap-1.5 bg-card px-4 py-3.5">
+      <span className="label">{label}</span>
+      <span className="num text-2xl leading-none font-medium">
+        {value}
+        {unit && <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>}
+      </span>
     </div>
   );
 }

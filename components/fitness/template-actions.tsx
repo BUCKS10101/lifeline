@@ -66,16 +66,16 @@ export function TemplateActions({ id, builtIn }: { id: string; builtIn: boolean 
         </Notice>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <Button className="h-11" disabled={busy !== null} onClick={() => void start()}>
+        <Button className="h-11 px-4 font-semibold" disabled={busy !== null} onClick={() => void start()}>
           <Play aria-hidden />{busy === "start" ? "Starting..." : "Start"}
         </Button>
-        <Button variant="outline" className="h-11" disabled={busy !== null} onClick={() => void duplicate()}>
-          <Copy aria-hidden />{busy === "duplicate" ? "Copying..." : "Duplicate"}
+        <Button variant="outline" className="h-11 max-sm:w-11 max-sm:px-0" disabled={busy !== null} onClick={() => void duplicate()}>
+          <Copy aria-hidden /><span className="max-sm:sr-only">{busy === "duplicate" ? "Copying..." : "Duplicate"}</span>
         </Button>
         {!builtIn && (
           <>
-            <Link href={`/fitness/templates/${id}`} className={buttonVariants({ variant: "outline", className: "h-11" })}>
-              <Pencil aria-hidden />Edit
+            <Link href={`/fitness/templates/${id}`} className={buttonVariants({ variant: "outline", className: "h-11 max-sm:w-11 max-sm:px-0" })}>
+              <Pencil aria-hidden /><span className="max-sm:sr-only">Edit</span>
             </Link>
             <ConfirmButton ariaLabel="Delete template" confirmLabel="Delete" disabled={busy !== null} onConfirm={() => void remove()}>
               <Trash2 aria-hidden />

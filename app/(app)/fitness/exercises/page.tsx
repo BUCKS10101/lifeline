@@ -1,12 +1,12 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { RowList } from "@/components/fitness/ui";
 import { CreateExerciseForm } from "@/components/fitness/create-exercise-form";
 import { EmptyState } from "@/components/fitness/empty-state";
 import { Pagination } from "@/components/fitness/pagination";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { PageHeader } from "@/components/shell/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { backendGet, requireUser, resolve } from "@/lib/backend";
 import { MUSCLE_GROUPS, type Exercise, type MuscleGroup, type Paged } from "@/lib/fitness-types";
 import { MUSCLE_LABEL } from "@/lib/format";
@@ -51,18 +51,20 @@ export default async function ExercisesPage(props: PageProps<"/fitness/exercises
           defaultValue={q}
           placeholder="Search exercises"
           aria-label="Search exercises"
-          className="h-11 flex-1 rounded-lg border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          className="h-12 w-full rounded-lg border border-input bg-card px-3.5 sm:flex-1 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
-        <select
-          name="muscleGroup"
-          defaultValue={muscle}
-          aria-label="Muscle group"
-          className="h-11 rounded-lg border border-input bg-transparent px-3 text-base dark:bg-input/30"
-        >
-          <option value="">All muscle groups</option>
-          {MUSCLE_GROUPS.map((g) => <option key={g} value={g}>{MUSCLE_LABEL[g]}</option>)}
-        </select>
-        <Button type="submit" className="h-11">Search</Button>
+        <div className="flex gap-2">
+          <select
+            name="muscleGroup"
+            defaultValue={muscle}
+            aria-label="Muscle group"
+            className="h-12 min-w-0 flex-1 rounded-lg border border-input bg-card px-3 text-base sm:flex-none"
+          >
+            <option value="">All muscle groups</option>
+            {MUSCLE_GROUPS.map((g) => <option key={g} value={g}>{MUSCLE_LABEL[g]}</option>)}
+          </select>
+          <Button type="submit" className="h-12 px-5 text-base font-semibold">Search</Button>
+        </div>
       </form>
 
       {exercises.items.length === 0 ? (
@@ -70,26 +72,24 @@ export default async function ExercisesPage(props: PageProps<"/fitness/exercises
           {q || muscle ? <Link href="/fitness/exercises" className="underline">Clear the filters</Link> : "Create your first custom exercise above."}
         </EmptyState>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <RowList>
           {exercises.items.map((exercise) => (
             <li key={exercise.id}>
-              <Link href={`/fitness/exercises/${exercise.id}`} className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                <Card className="transition-colors hover:bg-accent/40">
-                  <CardContent className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate font-medium">{exercise.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {MUSCLE_LABEL[exercise.primaryMuscleGroup]}
-                        {exercise.equipment ? ` · ${exercise.equipment.toLowerCase()}` : ""}
-                      </span>
-                    </div>
-                    {!exercise.builtIn && <Badge variant="secondary">Custom</Badge>}
-                  </CardContent>
-                </Card>
+              <Link href={`/fitness/exercises/${exercise.id}`}
+                className="flex min-h-16 items-center gap-3 px-4 py-3 outline-none transition-colors hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate font-medium">{exercise.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {MUSCLE_LABEL[exercise.primaryMuscleGroup]}
+                    {exercise.equipment ? ` · ${exercise.equipment.toLowerCase()}` : ""}
+                  </span>
+                </div>
+                {!exercise.builtIn && <span className="shrink-0 rounded border px-1.5 text-xs font-medium text-muted-foreground">Custom</span>}
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               </Link>
             </li>
           ))}
-        </ul>
+        </RowList>
       )}
       <Pagination basePath="/fitness/exercises" page={exercises.page} totalPages={exercises.totalPages} extraQuery={extra.toString()} />
     </div>

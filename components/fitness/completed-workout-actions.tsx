@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { errorMessage, fieldErrors, Field, Notice, SubmitButton } from "@/components/auth/ui";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -58,9 +57,9 @@ export function CompletedWorkoutActions({ workoutId, name, notes }: { workoutId:
   }
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base">Name and notes</CardTitle></CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <section className="flex flex-col gap-4 rounded-lg border bg-card p-4">
+      <h2 className="text-base font-semibold tracking-tight">Name and notes</h2>
+      <div className="flex flex-col gap-4">
         <form onSubmit={save} className="flex flex-col gap-4">
           {error && <Notice kind="error">{error}</Notice>}
           {saved && <Notice kind="success">Saved.</Notice>}
@@ -71,7 +70,7 @@ export function CompletedWorkoutActions({ workoutId, name, notes }: { workoutId:
               name="notes"
               defaultValue={notes}
               maxLength={1000}
-              className="min-h-24 w-full rounded-lg border border-input bg-transparent p-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+              className="min-h-24 w-full rounded-lg border border-input bg-background p-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
             />
             {errors.notes && <span className="text-destructive">{errors.notes}</span>}
           </label>
@@ -98,7 +97,7 @@ export function CompletedWorkoutActions({ workoutId, name, notes }: { workoutId:
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
