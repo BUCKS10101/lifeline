@@ -154,10 +154,20 @@ The direction is determined from the start and the target rather than assumed:
 
 Filled in when implementation starts.
 
-- [ ] Checkpoint 0: browser-check tooling
-- [ ] Checkpoint 1: schema and weight entries
+- [x] Checkpoint 0: browser-check tooling (PR #7)
+- [x] Checkpoint 1: schema and weight entries
 - [ ] Checkpoint 2: weight analytics
 - [ ] Checkpoint 3: fitness analytics
 - [ ] Checkpoint 4: chart foundation and `/weight`
 - [ ] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
 - [ ] Checkpoint 6: verification
+
+## Checkpoint 1 notes
+
+- `V6__weight.sql` creates both tables from the plan. `weight_targets` is exercised only by database-level tests in this checkpoint; its API and logic arrive in Checkpoint 2.
+- Endpoints 1 to 3 (`GET`, `PUT` and `DELETE` on `/api/v1/weight-entries`) are implemented. Nothing else from the plan is.
+- `WeightEntry` is a read-only (`@Immutable`) entity, so Hibernate still validates the schema. All writes go through one atomic native upsert (`INSERT ... ON CONFLICT (user_id, entry_date) DO UPDATE ... RETURNING (xmax = 0)`), which is what makes parallel writes to one day safe and tells `201` from `200`.
+- Error codes: `DATE_IN_FUTURE` and `DATE_TOO_EARLY` (400), `INVALID_RANGE` (400), malformed dates are `BAD_REQUEST` (400), and a missing entry is `NOT_FOUND` (404).
+- `PUT` replaces the whole entry, so omitting `notes` clears it. Recorded in `docs/api-conventions.md`.
+- Test infrastructure: the generic setup moved from `FitnessApiTest` into `support/ApiTestBase`, and the parallel runner into `support/Concurrent`, so weight tests do not extend a fitness class. No fitness test changed.
+- Tests: 78 new (schema 30, API 44, concurrency 4). Two deliberate mutations (ignore the user's timezone; always report "created") were each caught by the intended tests. Full suite: 379 of 379.

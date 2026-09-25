@@ -30,6 +30,8 @@ These rules apply to every backend endpoint. They describe what the code does to
 | 429 | Rate limited |
 | 500 | Unexpected server error |
 
+A `PUT` addressed by a natural key (for example `PUT /api/v1/weight-entries/{date}`) is an upsert. It returns **201** with a `Location` header when it creates the resource and **200** when it replaces an existing one. It is idempotent, so a retry is safe. `PUT` replaces the whole resource, so an omitted optional field is cleared.
+
 ## Requests and responses
 
 - JSON only. `Content-Type: application/json`.
