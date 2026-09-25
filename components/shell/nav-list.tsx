@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FOOTER_NAV, isActive, MAIN_NAV, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-const rowClass = "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium";
+const rowClass = "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium lg:min-h-9";
 
 function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: string; onNavigate?: () => void }) {
   const Icon = item.icon;

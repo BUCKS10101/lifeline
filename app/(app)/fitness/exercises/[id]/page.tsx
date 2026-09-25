@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/fitness/empty-state";
 import { ExerciseManage } from "@/components/fitness/exercise-manage";
 import { Pagination } from "@/components/fitness/pagination";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { PageHeader } from "@/components/shell/page-header";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RowList, SectionHeading, StatGrid } from "@/components/fitness/ui";
 import { backendGet, requireUser, resolve } from "@/lib/backend";
 import type { ExerciseHistoryItem, ExerciseRecords, Paged } from "@/lib/fitness-types";
 import { MUSCLE_LABEL, formatDate, formatKg, formatNumber, formatSet, formatVolume } from "@/lib/format";
@@ -40,76 +41,72 @@ export default async function ExercisePage(props: PageProps<"/fitness/exercises/
         description={`${MUSCLE_LABEL[exercise.primaryMuscleGroup]}${exercise.equipment ? ` · ${exercise.equipment.toLowerCase()}` : ""}`}
         actions={
           <>
-            <Badge variant="secondary">{exercise.builtIn ? "Built-in" : "Custom"}</Badge>
+            <span className="rounded border px-1.5 text-xs font-medium text-muted-foreground">{exercise.builtIn ? "Built-in" : "Custom"}</span>
             {exercise.archived && <Badge variant="outline">Removed</Badge>}
-            <Link href="/fitness/exercises" className="text-sm underline">All exercises</Link>
+            <Link href="/fitness/exercises" className="inline-flex h-11 items-center text-sm text-muted-foreground hover:text-foreground hover:underline">All exercises</Link>
           </>
         }
       />
 
       <section aria-labelledby="records-heading" className="flex flex-col gap-3">
-        <h2 id="records-heading" className="text-sm font-medium text-muted-foreground">Personal bests</h2>
+        <SectionHeading id="records-heading">Personal bests</SectionHeading>
         {!hasRecords ? (
           <EmptyState title="No records yet">Log this exercise in a finished workout and your bests appear here.</EmptyState>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Card>
-              <CardHeader><CardTitle className="text-sm font-medium text-muted-foreground">Heaviest set</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-xl font-semibold">{formatSet(records.heaviestWeight!.weightKg, records.heaviestWeight!.reps)}</p>
-                <p className="text-sm text-muted-foreground">{formatDate(records.heaviestWeight!.performedOn)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-sm font-medium text-muted-foreground">Best estimated 1RM</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-xl font-semibold">{formatKg(records.bestEstimated1rm!.valueKg)}</p>
-                <p className="text-sm text-muted-foreground">
+          <>
+            <StatGrid className="sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5 bg-card px-4 py-3.5">
+                <span className="label">Heaviest set</span>
+                <span className="num text-2xl leading-none font-medium">{formatSet(records.heaviestWeight!.weightKg, records.heaviestWeight!.reps)}</span>
+                <span className="text-sm text-muted-foreground">{formatDate(records.heaviestWeight!.performedOn)}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 bg-card px-4 py-3.5">
+                <span className="label">Best estimated 1RM</span>
+                <span className="num text-2xl leading-none font-medium">{formatKg(records.bestEstimated1rm!.valueKg)}</span>
+                <span className="num text-sm text-muted-foreground">
                   from {formatSet(records.bestEstimated1rm!.weightKg, records.bestEstimated1rm!.reps)} · {formatDate(records.bestEstimated1rm!.performedOn)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="sm:col-span-2">
-              <CardHeader><CardTitle className="text-sm font-medium text-muted-foreground">Best reps by weight</CardTitle></CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-1 text-sm">
-                  {records.bestRepsAtWeight.map((mark) => (
-                    <li key={mark.weightKg} className="flex justify-between gap-3">
-                      <span>{formatNumber(mark.weightKg)} kg × {mark.reps}</span>
-                      <span className="text-muted-foreground">{formatDate(mark.performedOn)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+                </span>
+              </div>
+            </StatGrid>
+            <div className="rounded-lg border bg-card px-4 py-3">
+              <span className="label">Best reps by weight</span>
+              <ul className="mt-1 flex flex-col divide-y text-sm">
+                {records.bestRepsAtWeight.map((mark) => (
+                  <li key={mark.weightKg} className="num flex min-h-10 items-center justify-between gap-3">
+                    <span className="font-medium">{formatNumber(mark.weightKg)} kg × {mark.reps}</span>
+                    <span className="text-muted-foreground">{formatDate(mark.performedOn)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
         )}
       </section>
 
       <section aria-labelledby="history-heading" className="flex flex-col gap-3">
-        <h2 id="history-heading" className="text-sm font-medium text-muted-foreground">History</h2>
+        <SectionHeading id="history-heading">History</SectionHeading>
         {history.items.length === 0 ? (
           <EmptyState title="Not done yet">Finished workouts that include this exercise are listed here.</EmptyState>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <RowList>
             {history.items.map((item) => (
               <li key={item.workoutId}>
-                <Link href={`/fitness/workouts/${item.workoutId}`} className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                  <Card className="transition-colors hover:bg-accent/40">
-                    <CardContent className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="font-medium">{formatDate(item.performedOn)}</span>
-                        <span className="text-sm text-muted-foreground">{formatVolume(item.volumeKg)}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {item.sets.map((s) => `${s.warmup ? "W " : ""}${formatNumber(s.weightKg)}×${s.reps}`).join(" · ")}
-                      </p>
-                    </CardContent>
-                  </Card>
+                <Link href={`/fitness/workouts/${item.workoutId}`}
+                  className="flex min-h-16 items-center gap-3 px-4 py-3 outline-none transition-colors hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="font-semibold">{formatDate(item.performedOn)}</span>
+                      <span className="num text-sm text-muted-foreground">{formatVolume(item.volumeKg)}</span>
+                    </span>
+                    <span className="num text-sm text-muted-foreground">
+                      {item.sets.map((s) => `${s.warmup ? "W " : ""}${formatNumber(s.weightKg)}×${s.reps}`).join(" · ")}
+                    </span>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                 </Link>
               </li>
             ))}
-          </ul>
+          </RowList>
         )}
         <Pagination basePath={`/fitness/exercises/${id}`} page={history.page} totalPages={history.totalPages} />
       </section>

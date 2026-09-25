@@ -7,9 +7,7 @@ import { errorMessage, fieldErrors, Notice } from "@/components/auth/ui";
 import { PrBadges } from "@/components/fitness/pr-badges";
 import { ConfirmButton } from "@/components/fitness/confirm-button";
 import { parseDraft, SetFields, type SetDraft } from "@/components/fitness/set-fields";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WorkoutExercise, WorkoutSet } from "@/lib/fitness-types";
 import { MUSCLE_LABEL, formatDate, formatNumber, formatSet } from "@/lib/format";
 
@@ -66,82 +64,92 @@ export function ExerciseCard({ entry, index, total, disabled, onMove, onRemove, 
     }
   }
 
+  const iconBtn = "h-11 min-w-11 text-muted-foreground hover:text-foreground";
   return (
-    <Card>
-      <CardHeader className="gap-1">
-        {/* min-w-0: the header is a grid item, which otherwise refuses to shrink below its unwrapped title
-            and pushes the action buttons past the card edge on narrow screens. */}
-        <div className="flex min-w-0 items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-col gap-1">
-            {/* The name wraps rather than truncating: on a phone the four action buttons leave little room, and
-                you need to read which exercise you are logging. */}
-            <CardTitle className="text-base leading-snug break-words">
-              <Link href={`/fitness/exercises/${entry.exercise.id}`} className="hover:underline">{entry.exercise.name}</Link>
-            </CardTitle>
-            <span className="text-xs text-muted-foreground">{MUSCLE_LABEL[entry.exercise.primaryMuscleGroup]}</span>
-          </div>
-          <div className="flex shrink-0 items-center">
-            <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11" disabled={disabled || index === 0}
-              aria-label={`Move ${entry.exercise.name} up`} onClick={() => onMove(-1)}><ArrowUp aria-hidden /></Button>
-            <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11" disabled={disabled || index === total - 1}
-              aria-label={`Move ${entry.exercise.name} down`} onClick={() => onMove(1)}><ArrowDown aria-hidden /></Button>
-            <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11" aria-label={`Notes for ${entry.exercise.name}`}
-              onClick={() => setShowNotes((v) => !v)}><StickyNote aria-hidden /></Button>
-            <ConfirmButton ariaLabel={`Remove ${entry.exercise.name} from workout`} confirmLabel="Remove" disabled={disabled} onConfirm={onRemove}>
-              <Trash2 aria-hidden />
-            </ConfirmButton>
-          </div>
+    <section className="flex flex-col gap-3 border-b py-5 first:pt-0">
+      {/* min-w-0: lets a long exercise name wrap instead of pushing the row past the screen edge. */}
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="num w-5 shrink-0 pt-1 text-sm text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h3 className="text-lg leading-snug font-semibold tracking-tight wrap-anywhere">
+            <Link href={`/fitness/exercises/${entry.exercise.id}`} className="-my-2.5 inline-block py-2.5 hover:underline">{entry.exercise.name}</Link>
+          </h3>
+          <span className="label">{MUSCLE_LABEL[entry.exercise.primaryMuscleGroup]}</span>
         </div>
-        {entry.lastSession && (
-          <p className="text-xs text-muted-foreground">
-            Last time ({formatDate(entry.lastSession.performedOn)}):{" "}
-            {entry.lastSession.sets.map((s) => formatSet(s.weightKg, s.reps)).join(", ")}
-          </p>
-        )}
-      </CardHeader>
+      </div>
+      <div className="flex items-center justify-between gap-2 pl-8">
+        <p className="num min-w-0 flex-1 text-sm text-muted-foreground">
+          {entry.lastSession ? (
+            <>
+              <span className="label block">Last time · {formatDate(entry.lastSession.performedOn)}</span>
+              {entry.lastSession.sets.map((s) => formatSet(s.weightKg, s.reps)).join(", ")}
+            </>
+          ) : null}
+        </p>
+        <div className="-mr-2 flex shrink-0 items-center">
+          <Button type="button" variant="ghost" size="icon" className={iconBtn} disabled={disabled || index === 0}
+            aria-label={`Move ${entry.exercise.name} up`} onClick={() => onMove(-1)}><ArrowUp aria-hidden /></Button>
+          <Button type="button" variant="ghost" size="icon" className={iconBtn} disabled={disabled || index === total - 1}
+            aria-label={`Move ${entry.exercise.name} down`} onClick={() => onMove(1)}><ArrowDown aria-hidden /></Button>
+          <Button type="button" variant="ghost" size="icon" className={iconBtn} aria-label={`Notes for ${entry.exercise.name}`}
+            onClick={() => setShowNotes((v) => !v)}><StickyNote aria-hidden /></Button>
+          <ConfirmButton ariaLabel={`Remove ${entry.exercise.name} from workout`} confirmLabel="Remove" disabled={disabled} onConfirm={onRemove}>
+            <Trash2 aria-hidden />
+          </ConfirmButton>
+        </div>
+      </div>
 
-      <CardContent className="flex flex-col gap-4">
-        {showNotes && <NotesField initial={entry.notes ?? ""} onSave={onSaveNotes} />}
+      {showNotes && <NotesField initial={entry.notes ?? ""} onSave={onSaveNotes} />}
 
-        {entry.sets.length > 0 && (
-          <ol className="flex flex-col divide-y rounded-lg border">
+      {entry.sets.length > 0 && (
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <div className="label grid grid-cols-[1.75rem_4.25rem_3rem_2.75rem_1fr] items-center bg-muted/50 px-3 py-1.5" aria-hidden>
+            <span>Set</span><span>Kg</span><span>Reps</span><span>RPE</span><span />
+          </div>
+          <ol className="divide-y">
             {entry.sets.map((set) => (
-              <li key={set.id} className="p-3">
+              <li key={set.id} className="px-3">
                 {editing === set.id ? (
-                  <EditSet set={set} onCancel={() => setEditing(null)}
-                    onSave={async (patch) => { await onUpdateSet(set.id, patch); setEditing(null); }} />
+                  <div className="py-3">
+                    <EditSet set={set} onCancel={() => setEditing(null)}
+                      onSave={async (patch) => { await onUpdateSet(set.id, patch); setEditing(null); }} />
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="w-6 text-sm text-muted-foreground">{set.setNumber}</span>
-                      <span className="font-medium">{formatSet(set.weightKg, set.reps)}</span>
-                      {set.rpe !== null && <span className="text-sm text-muted-foreground">RPE {formatNumber(set.rpe)}</span>}
-                      {set.warmup && <Badge variant="secondary">Warm-up</Badge>}
-                      <PrBadges records={set.personalRecords} />
+                  <div className={set.warmup ? "text-muted-foreground" : ""}>
+                    <div className="num flex min-h-12 items-center">
+                      <span className="w-7 shrink-0 text-sm text-muted-foreground">
+                        {set.warmup ? <><span aria-hidden>W</span><span className="sr-only">Warm-up</span></> : set.setNumber}
+                      </span>
+                      <span className="w-[4.25rem] shrink-0 text-lg font-medium">{formatNumber(set.weightKg)}</span>
+                      <span className="w-12 shrink-0 text-lg font-medium">{set.reps}</span>
+                      <span className="w-11 shrink-0 text-sm text-muted-foreground">
+                        {set.rpe !== null ? <><span className="sr-only">RPE </span>{formatNumber(set.rpe)}</> : ""}
+                      </span>
+                      <span className="flex min-w-0 flex-1 items-center justify-end gap-0.5">
+                        <Button type="button" variant="ghost" className="h-11 px-2.5 text-muted-foreground" disabled={disabled}
+                          aria-label={`Edit set ${set.setNumber} of ${entry.exercise.name}`} onClick={() => setEditing(set.id)}>Edit</Button>
+                        <ConfirmButton ariaLabel={`Delete set ${set.setNumber} of ${entry.exercise.name}`} confirmLabel="Delete"
+                          disabled={disabled} onConfirm={() => onDeleteSet(set.id)}><X aria-hidden /></ConfirmButton>
+                      </span>
                     </div>
-                    <div className="flex shrink-0 items-center">
-                      <Button type="button" variant="ghost" className="h-11" disabled={disabled}
-                        aria-label={`Edit set ${set.setNumber} of ${entry.exercise.name}`} onClick={() => setEditing(set.id)}>Edit</Button>
-                      <ConfirmButton ariaLabel={`Delete set ${set.setNumber} of ${entry.exercise.name}`} confirmLabel="Delete"
-                        disabled={disabled} onConfirm={() => onDeleteSet(set.id)}><X aria-hidden /></ConfirmButton>
-                    </div>
+                    {set.personalRecords.length > 0 && <div className="-mt-1 pb-2.5 pl-7"><PrBadges records={set.personalRecords} /></div>}
                   </div>
                 )}
               </li>
             ))}
           </ol>
-        )}
-
-        <div className="flex flex-col gap-3 rounded-lg bg-muted/40 p-3">
-          <span className="text-sm font-medium">Set {entry.sets.length + 1}</span>
-          {error && <Notice kind="error">{error}</Notice>}
-          <SetFields draft={draft} onChange={setDraft} errors={errors} idPrefix={`draft-${entry.id}`} />
-          <Button type="button" size="lg" className="h-12 text-base" disabled={disabled || logging} onClick={() => void log()}>
-            <Plus aria-hidden />{logging ? "Logging..." : "Log set"}
-          </Button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
+        <span className="text-sm font-medium text-primary">Set {entry.sets.length + 1}</span>
+        {error && <Notice kind="error">{error}</Notice>}
+        <SetFields draft={draft} onChange={setDraft} errors={errors} idPrefix={`draft-${entry.id}`} />
+        <Button type="button" size="lg" className="h-14 text-base font-semibold" disabled={disabled || logging} onClick={() => void log()}>
+          <Plus aria-hidden />{logging ? "Logging..." : "Log set"}
+        </Button>
+      </div>
+    </section>
   );
 }
 
@@ -180,12 +188,12 @@ function EditSet({ set, onSave, onCancel }: { set: WorkoutSet; onSave: (patch: S
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-medium">Edit set {set.setNumber}</span>
+      <span className="text-sm font-medium text-primary">Edit set {set.setNumber}</span>
       {error && <Notice kind="error">{error}</Notice>}
       <SetFields draft={draft} onChange={setDraft} errors={errors} idPrefix={`edit-${set.id}`} />
       <div className="flex gap-2">
-        <Button type="button" className="h-11 flex-1" disabled={saving} onClick={() => void save()}><Check aria-hidden />Save</Button>
-        <Button type="button" variant="outline" className="h-11 flex-1" disabled={saving} onClick={onCancel}>Cancel</Button>
+        <Button type="button" className="h-12 flex-1" disabled={saving} onClick={() => void save()}><Check aria-hidden />Save</Button>
+        <Button type="button" variant="outline" className="h-12 flex-1" disabled={saving} onClick={onCancel}>Cancel</Button>
       </div>
     </div>
   );
@@ -209,7 +217,7 @@ function NotesField({ initial, onSave }: { initial: string; onSave: (notes: stri
     <div className="flex flex-col gap-1">
       <textarea
         aria-label="Exercise notes"
-        className="min-h-20 w-full rounded-lg border border-input bg-transparent p-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+        className="min-h-20 w-full scroll-mb-32 rounded-lg border border-input bg-background p-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
         placeholder="Notes for this exercise"
         maxLength={500}
         value={value}

@@ -19,7 +19,7 @@ export function TopBar({ user, dateLabel }: { user: ShellUser | null; dateLabel:
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur md:px-6">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger
-          render={<Button variant="ghost" size="icon" className="-ml-2 md:hidden" aria-label="Open navigation menu" />}
+          render={<Button variant="ghost" size="icon" className="-ml-2 size-11 md:hidden" aria-label="Open navigation menu" />}
         >
           <Menu aria-hidden />
         </SheetTrigger>
@@ -33,7 +33,7 @@ export function TopBar({ user, dateLabel }: { user: ShellUser | null; dateLabel:
             {user && (
               <div className="flex flex-col gap-2 border-t pt-4">
                 <p className="truncate px-1 text-xs text-muted-foreground">{user.email}</p>
-                <LogoutButton className="w-full" />
+                <LogoutButton className="h-11 w-full" />
               </div>
             )}
           </div>

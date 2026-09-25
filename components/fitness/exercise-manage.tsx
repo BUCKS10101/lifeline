@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { errorMessage, fieldErrors, Field, Notice, SelectField, SubmitButton } from "@/components/auth/ui";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -62,9 +61,9 @@ export function ExerciseManage({ exercise }: { exercise: Exercise }) {
   }
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base">Your exercise</CardTitle></CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <section className="flex flex-col gap-4 rounded-lg border bg-card p-4">
+      <h2 className="text-base font-semibold tracking-tight">Your exercise</h2>
+      <div className="flex flex-col gap-4">
         <form onSubmit={save} className="flex flex-col gap-4">
           {error && <Notice kind="error">{error}</Notice>}
           {saved && <Notice kind="success">Saved.</Notice>}
@@ -97,7 +96,7 @@ export function ExerciseManage({ exercise }: { exercise: Exercise }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

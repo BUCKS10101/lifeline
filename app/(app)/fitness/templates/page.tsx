@@ -4,9 +4,8 @@ import { EmptyState } from "@/components/fitness/empty-state";
 import { TemplateActions } from "@/components/fitness/template-actions";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { PageHeader } from "@/components/shell/page-header";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeading } from "@/components/fitness/ui";
 import { backendGet, requireUser, resolve } from "@/lib/backend";
 import type { Paged, TemplateSummary } from "@/lib/fitness-types";
 import { pluralize } from "@/lib/format";
@@ -27,7 +26,7 @@ export default async function TemplatesPage() {
       <PageHeader
         title="Workout templates"
         description="Start a workout from a list of exercises. Duplicate a built-in one to make it your own."
-        actions={<Link href="/fitness/templates/new" className={buttonVariants()}><Plus aria-hidden />New template</Link>}
+        actions={<Link href="/fitness/templates/new" className={buttonVariants({ className: "h-11 px-4" })}><Plus aria-hidden />New template</Link>}
       />
 
       <TemplateList title="My templates" templates={mine}
@@ -40,23 +39,19 @@ export default async function TemplatesPage() {
 function TemplateList({ title, templates, empty }: { title: string; templates: TemplateSummary[]; empty?: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+      <SectionHeading>{title}</SectionHeading>
       {templates.length === 0 ? empty : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card">
           {templates.map((t) => (
-            <li key={t.id}>
-              <Card>
-                <CardContent className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <Link href={`/fitness/templates/${t.id}`} className="min-w-0 truncate font-medium hover:underline">{t.name}</Link>
-                    <span className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
-                      {pluralize(t.exerciseCount, "exercise")}
-                      {t.builtIn && <Badge variant="secondary">Built-in</Badge>}
-                    </span>
-                  </div>
-                  <TemplateActions id={t.id} builtIn={t.builtIn} />
-                </CardContent>
-              </Card>
+            <li key={t.id} className="flex flex-col gap-3 p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <Link href={`/fitness/templates/${t.id}`} className="-my-2.5 min-w-0 truncate py-2.5 font-semibold hover:underline">{t.name}</Link>
+                <span className="num flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
+                  {pluralize(t.exerciseCount, "exercise")}
+                  {t.builtIn && <span className="rounded border px-1.5 text-xs font-medium">Built-in</span>}
+                </span>
+              </div>
+              <TemplateActions id={t.id} builtIn={t.builtIn} />
             </li>
           ))}
         </ul>

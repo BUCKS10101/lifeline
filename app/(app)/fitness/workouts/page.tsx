@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/fitness/empty-state";
 import { Pagination } from "@/components/fitness/pagination";
+import { RowList } from "@/components/fitness/ui";
 import { WorkoutCard } from "@/components/fitness/workout-card";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { PageHeader } from "@/components/shell/page-header";
@@ -27,16 +28,16 @@ export default async function WorkoutHistoryPage(props: PageProps<"/fitness/work
       <PageHeader
         title="Workout history"
         description={`${workouts.totalItems} completed ${workouts.totalItems === 1 ? "workout" : "workouts"}, newest first.`}
-        actions={<Link href="/fitness/start" className={buttonVariants()}>Start workout</Link>}
+        actions={<Link href="/fitness/start" className={buttonVariants({ className: "h-11 px-4" })}>Start workout</Link>}
       />
       {workouts.items.length === 0 ? (
         <EmptyState title={page > 0 ? "No workouts on this page" : "No completed workouts yet"}>
           {page > 0 ? <Link href="/fitness/workouts" className="underline">Back to the first page</Link> : "Finish a workout and it will be listed here."}
         </EmptyState>
       ) : (
-        <div className="flex flex-col gap-3">
+        <RowList>
           {workouts.items.map((w) => <WorkoutCard key={w.id} workout={w} />)}
-        </div>
+        </RowList>
       )}
       <Pagination basePath="/fitness/workouts" page={workouts.page} totalPages={workouts.totalPages} />
     </div>

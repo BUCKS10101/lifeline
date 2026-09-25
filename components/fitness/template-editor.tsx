@@ -7,7 +7,7 @@ import { errorMessage, fieldErrors, Field, Notice, SubmitButton, TextareaField }
 import { EmptyState } from "@/components/fitness/empty-state";
 import { ExercisePicker } from "@/components/fitness/exercise-picker";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeading } from "@/components/fitness/ui";
 import { Input } from "@/components/ui/input";
 import { apiPost, apiPut } from "@/lib/client-api";
 import type { Exercise, TemplateDetail } from "@/lib/fitness-types";
@@ -77,44 +77,45 @@ export function TemplateEditor({ initial }: { initial?: TemplateDetail }) {
       <TextareaField label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} error={errors.notes} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">Exercises ({rows.length}/{MAX_EXERCISES})</h2>
+        <SectionHeading>Exercises ({rows.length}/{MAX_EXERCISES})</SectionHeading>
         {rows.length === 0 && <EmptyState title="No exercises yet">Add the exercises for this template.</EmptyState>}
-        <ol className="flex flex-col gap-2">
+        <ol className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card empty:hidden">
           {rows.map((row, index) => (
-            <li key={row.exercise.id}>
-              <Card>
-                <CardContent className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium">{index + 1}. {row.exercise.name}</span>
-                    <span className="text-xs text-muted-foreground">{MUSCLE_LABEL[row.exercise.primaryMuscleGroup]}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                      Sets
-                      <Input
-                        className="h-11 w-16 text-center"
-                        inputMode="numeric"
-                        placeholder="-"
-                        aria-label={`Target sets for ${row.exercise.name}`}
-                        value={row.targetSets}
-                        onChange={(e) => setRows((cur) => cur.map((r, i) => (i === index ? { ...r, targetSets: e.target.value } : r)))}
-                      />
-                    </label>
-                    <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11" disabled={index === 0}
-                      aria-label={`Move ${row.exercise.name} up`} onClick={() => move(index, -1)}><ArrowUp aria-hidden /></Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11" disabled={index === rows.length - 1}
-                      aria-label={`Move ${row.exercise.name} down`} onClick={() => move(index, 1)}><ArrowDown aria-hidden /></Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11"
-                      aria-label={`Remove ${row.exercise.name}`} onClick={() => setRows((cur) => cur.filter((_, i) => i !== index))}><X aria-hidden /></Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <li key={row.exercise.id} className="flex flex-col gap-2 p-3">
+              <div className="flex min-w-0 items-baseline gap-3">
+                <span className="num w-5 shrink-0 text-sm text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="font-medium wrap-anywhere">{row.exercise.name}</span>
+                  <span className="text-sm text-muted-foreground">{MUSCLE_LABEL[row.exercise.primaryMuscleGroup]}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2 pl-8">
+                <label className="label flex items-center gap-2">
+                  Sets
+                  <Input
+                    className="num h-11 w-16 text-center text-base"
+                    inputMode="numeric"
+                    placeholder="-"
+                    aria-label={`Target sets for ${row.exercise.name}`}
+                    value={row.targetSets}
+                    onChange={(e) => setRows((cur) => cur.map((r, i) => (i === index ? { ...r, targetSets: e.target.value } : r)))}
+                  />
+                </label>
+                <div className="-mr-1 flex items-center">
+                  <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11 text-muted-foreground" disabled={index === 0}
+                    aria-label={`Move ${row.exercise.name} up`} onClick={() => move(index, -1)}><ArrowUp aria-hidden /></Button>
+                  <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11 text-muted-foreground" disabled={index === rows.length - 1}
+                    aria-label={`Move ${row.exercise.name} down`} onClick={() => move(index, 1)}><ArrowDown aria-hidden /></Button>
+                  <Button type="button" variant="ghost" size="icon" className="h-11 min-w-11 text-muted-foreground"
+                    aria-label={`Remove ${row.exercise.name}`} onClick={() => setRows((cur) => cur.filter((_, i) => i !== index))}><X aria-hidden /></Button>
+                </div>
+              </div>
             </li>
           ))}
         </ol>
         {rows.length < MAX_EXERCISES && (
           <ExercisePicker
-            trigger={<Button type="button" variant="outline" className="h-12 self-start" />}
+            trigger={<Button type="button" variant="outline" className="h-12 px-4 text-base" />}
             excludeIds={rows.map((r) => r.exercise.id)}
             onSelect={(exercise) => setRows((cur) => [...cur, { exercise, targetSets: "" }])}
           >

@@ -23,20 +23,21 @@ export function parseDraft(draft: SetDraft):
   return { ok: true, weightKg: weight, reps, rpe: draft.rpe === "" ? null : Number(draft.rpe) };
 }
 
-/** Big, thumb-friendly inputs for weight, reps, optional RPE and the warm-up flag. */
+/** Big, thumb-friendly inputs: weight, reps and RPE in one row, the warm-up flag underneath. */
 export function SetFields({ draft, onChange, errors, idPrefix }: {
   draft: SetDraft;
   onChange: (next: SetDraft) => void;
   errors?: Partial<Record<string, string>>;
   idPrefix: string;
 }) {
+  const box = "h-14 scroll-mb-32 rounded-lg text-foreground border border-input bg-background px-3 text-2xl font-medium num dark:bg-background";
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <label className="flex flex-col gap-1 text-xs text-muted-foreground" htmlFor={`${idPrefix}-weight`}>
+    <div className="grid grid-cols-[1.3fr_1fr_1fr] gap-2">
+      <label className="label flex flex-col gap-1.5" htmlFor={`${idPrefix}-weight`}>
         Weight (kg)
         <Input
           id={`${idPrefix}-weight`}
-          className="h-11 text-base"
+          className={`${box} md:text-2xl`}
           inputMode="decimal"
           autoComplete="off"
           placeholder="0"
@@ -46,11 +47,11 @@ export function SetFields({ draft, onChange, errors, idPrefix }: {
         />
         {errors?.weight && <span className="text-destructive">{errors.weight}</span>}
       </label>
-      <label className="flex flex-col gap-1 text-xs text-muted-foreground" htmlFor={`${idPrefix}-reps`}>
+      <label className="label flex flex-col gap-1.5" htmlFor={`${idPrefix}-reps`}>
         Reps
         <Input
           id={`${idPrefix}-reps`}
-          className="h-11 text-base"
+          className={`${box} md:text-2xl`}
           inputMode="numeric"
           autoComplete="off"
           placeholder="0"
@@ -60,11 +61,11 @@ export function SetFields({ draft, onChange, errors, idPrefix }: {
         />
         {errors?.reps && <span className="text-destructive">{errors.reps}</span>}
       </label>
-      <label className="flex flex-col gap-1 text-xs text-muted-foreground" htmlFor={`${idPrefix}-rpe`}>
-        RPE (optional)
+      <label className="label flex flex-col gap-1.5" htmlFor={`${idPrefix}-rpe`}>
+        <span>RPE<span className="sr-only"> (optional)</span></span>
         <select
           id={`${idPrefix}-rpe`}
-          className="h-11 rounded-lg border border-input bg-transparent px-2 text-base text-foreground dark:bg-input/30"
+          className={`${box} min-w-0 text-xl text-foreground`}
           value={draft.rpe}
           onChange={(e) => onChange({ ...draft, rpe: e.target.value })}
         >
@@ -74,17 +75,17 @@ export function SetFields({ draft, onChange, errors, idPrefix }: {
       </label>
       <label
         className={cn(
-          "flex h-11 cursor-pointer items-center gap-2 self-end rounded-lg border px-3 text-sm",
-          draft.warmup ? "border-primary bg-primary/10" : "border-input",
+          "col-span-3 flex h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 text-sm transition-colors",
+          draft.warmup ? "border-primary/60 bg-primary/10 text-foreground" : "border-input text-muted-foreground",
         )}
       >
         <input
           type="checkbox"
-          className="size-4"
+          className="size-5 accent-primary"
           checked={draft.warmup}
           onChange={(e) => onChange({ ...draft, warmup: e.target.checked })}
         />
-        Warm-up
+        Warm-up set
       </label>
     </div>
   );

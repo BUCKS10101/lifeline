@@ -13,11 +13,11 @@ export function Pagination({ basePath, page, totalPages, extraQuery = "" }: {
   return (
     <nav aria-label="Pagination" className="flex items-center justify-between gap-3">
       {page > 0 ? (
-        <Link href={href(page - 1)} className={buttonVariants({ variant: "outline" })}>Previous</Link>
+        <Link href={href(page - 1)} className={buttonVariants({ variant: "outline", className: "h-11 px-4" })}>Previous</Link>
       ) : <span />}
-      <span className="text-sm text-muted-foreground">Page {page + 1} of {totalPages}</span>
+      <span className="num text-sm text-muted-foreground">Page {page + 1} of {totalPages}</span>
       {page + 1 < totalPages ? (
-        <Link href={href(page + 1)} className={buttonVariants({ variant: "outline" })}>Next</Link>
+        <Link href={href(page + 1)} className={buttonVariants({ variant: "outline", className: "h-11 px-4" })}>Next</Link>
       ) : <span />}
     </nav>
   );

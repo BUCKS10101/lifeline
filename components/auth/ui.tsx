@@ -15,7 +15,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
 }
 
 const controlClass =
-  "h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-colors " +
+  "h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none md:text-sm transition-colors " +
   "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30";
 
 function FieldShell({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
@@ -52,7 +52,7 @@ export function SelectField(
 
 export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
   return (
-    <Button type="submit" size="lg" disabled={pending}>
+    <Button type="submit" size="lg" className="h-12 text-base font-semibold" disabled={pending}>
       {pending ? "Please wait..." : children}
     </Button>
   );
