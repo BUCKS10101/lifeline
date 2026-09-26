@@ -301,7 +301,7 @@ The backend is naturally two pieces: sleep is the hard one (time resolution), an
 - [x] Checkpoint 1: schema, preferences and sleep
 - [x] Checkpoint 2: water, protein and Today
 - [x] Checkpoint 3: Today view
-- [ ] Checkpoint 4: metric pages, dashboard and verification
+- [x] Checkpoint 4: metric pages, dashboard and verification
 
 ## Checkpoint 1 notes
 
@@ -330,3 +330,16 @@ The backend is naturally two pieces: sleep is the hard one (time resolution), an
 - **Customize sheet:** three switches (all on by default), three optional goal fields with no suggested values (sleep is typed in hours and stored as minutes). Hiding a metric removes its line and keeps its data; hiding all three shows a short message and Customize.
 - **States:** empty ("Not logged", 0 ml, 0 g), route loading skeleton, the shared unavailable panel with Try again, and inline errors on a failed add (no Undo, value unchanged).
 - **Browser checks:** new part `08-wellness` (96 checks). Part 8 imports `lib/sleep-preview.ts` directly, so it needs Node 22.18 or newer (24 recommended); time fields are set through the native value setter because headless Chrome cannot use the time picker. Two mutations (a broken preview, and the water switch wired to the wrong state) were each caught.
+
+## Checkpoint 4 notes
+
+- **Backend:** the two series endpoints deferred from checkpoint 2 are built here: `GET /api/v1/water/series` and `GET /api/v1/protein/series` (default last 14 days, at most 366; every day listed and zero-filled; the optional goal; `average` per day that has an entry, and `previousAverage` for the equally long period just before, each null when it has no such day). Nothing else on the backend changed.
+- **Metric pages** (`/wellness/sleep`, `/wellness/water`, `/wellness/protein`), each a short page: header with today's value, the log controls, **one chart** with `?range=` links, one line of average text, and a short list.
+  - **Sleep:** log form (a date and two times, with the live duration), duration by night as a line with the optional goal, ranges 14d/30d (default)/90d/1y, "Average ... over N nights. Previous 30 days: ...", and recent nights (10 a page) with inline edit and two-tap delete.
+  - **Water and protein:** `+250`/`+500` and a custom amount (water), or your own chips and grams plus an optional label (protein), each with Undo; daily totals as bars with the optional goal line, ranges 7d/14d (default)/30d/90d; "Average ... on days with an entry (N days). Previous 14 days: ...".
+  - **History interpretation (please confirm):** the plan says "a short history list with delete". For water and protein the list is one **day's entries** (today by default) with two-tap delete, and the chart is the daily totals over the range. A date field under the list ("Another day", `?date=`) switches the day, and the log controls then log for that day. Days are not listed separately, so the page stays short.
+  - A metric that is hidden has no page: it redirects to Today.
+- **Today** lines are now links (the label and value); the button on each line is separate. **Dashboard:** one "Today's wellness" card in the Today section, listing only the visible metrics (sleep, water, protein, with goals), with a Log link and no inline logging; with nothing logged it says so; with everything hidden there is no card. The Today section is a 2-column grid at every size above a phone, so its four cards form 2 x 2.
+- **Charts:** the existing primitives were extended, not duplicated: a `duration` unit (minutes written as "7 h 42 min", hourly axis ticks), an `ml` unit ("1.25 L", round tick steps; `g` gets round steps too), and a dashed goal line on the bar chart.
+- **Performance** (`WellnessPerformanceTest`: 730 nights, 2,190 water and 2,190 protein entries): every read 8 to 25 ms locally (sleep series for a year 25 ms, history page 17 ms, water and protein series 13 and 12 ms, today 11 ms, day views 9 ms, suggestions 8 ms) against a 3 s limit, with correctness assertions (counts, averages, previous periods, zero-filled totals, goal progress).
+- **Tests:** backend adds `IntakeSeriesApiTest` (9) and `WellnessPerformanceTest` (1), plus a 367-day boundary case for the sleep series; each series mutation is caught (per-entry average, previous-period window, other users, zero-fill, range cap for water/protein/sleep). Browser part 9 (131 checks); in part 8 the "Today lines are plain text" expectation became "each line is one link to its page", because this checkpoint is where the plan says they become links. Two frontend mutations caught (the hidden-metric redirect; swapping the previous average for the current one, which first exposed that the seed made both averages equal, so the seed now differs by period).

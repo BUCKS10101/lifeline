@@ -306,6 +306,7 @@ class SleepApiTest extends ApiTestBase {
         expectError(client, client.get(SERIES + "?from=2026-09-10&to=2026-09-01"), 400, "INVALID_RANGE");
         expectError(client, client.get(SERIES + "?from=2025-01-01&to=2026-09-24"), 400, "INVALID_RANGE");
         expect(client, client.get(SERIES + "?from=2025-09-24&to=2026-09-24"), 200); // exactly 366 days
+        expectError(client, client.get(SERIES + "?from=2025-09-23&to=2026-09-24"), 400, "INVALID_RANGE"); // 367 days: one too many
         expect(client, client.get(SERIES + "?from=nope"), 400);
     }
 

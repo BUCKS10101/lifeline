@@ -3,6 +3,7 @@ import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
+import { WellnessTodayCard } from "@/components/dashboard/wellness-card";
 import { requireUser } from "@/lib/backend";
 import { formatToday, greeting } from "@/lib/timezones";
 
@@ -25,8 +26,9 @@ export default async function DashboardPage() {
 
       <section aria-labelledby="today-heading" className="flex flex-col gap-3">
         <h2 id="today-heading" className="text-sm font-medium text-muted-foreground">Today</h2>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <TodaysWorkoutCard timezone={user.timezone} />
+          <WellnessTodayCard />
           <EmptyCard
             icon={ListChecks}
             title="Tasks due"

@@ -1,11 +1,14 @@
 package com.personalos.backend.wellness.protein;
 
 import com.personalos.backend.wellness.protein.dto.ProteinDtos.ProteinSuggestion;
+import com.personalos.backend.wellness.dto.WellnessDtos.IntakeAverage;
+import com.personalos.backend.wellness.protein.dto.ProteinDtos.ProteinPoint;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Read-only derived data: day totals and the person's own frequent labels. Nothing here is stored. */
@@ -54,5 +57,30 @@ public class ProteinQueries {
                 .param("userId", userId)
                 .query((rs, n) -> new ProteinSuggestion(rs.getString("label"), rs.getInt("grams"), rs.getInt("uses")))
                 .list();
+    }
+
+    /** Every day from {@code from} to {@code to}, oldest first, with days that have no entry listed as 0. */
+    public List<ProteinPoint> series(UUID userId, LocalDate from, LocalDate to) {
+        return jdbc.sql("""
+                        SELECT d.day::date AS day, COALESCE(SUM(e.grams), 0) AS total
+                        FROM generate_series(CAST(:from AS date), CAST(:to AS date), interval '1 day') AS d(day)
+                        LEFT JOIN protein_entries e ON e.user_id = :userId AND e.log_date = d.day::date
+                        GROUP BY d.day ORDER BY d.day
+                        """)
+                .param("userId", userId).param("from", from).param("to", to)
+                .query((rs, n) -> new ProteinPoint(rs.getObject("day", LocalDate.class), rs.getInt("total")))
+                .list();
+    }
+
+    /** The mean daily total (whole units) over the days in the range that have at least one entry, or empty when none do. */
+    public Optional<IntakeAverage> average(UUID userId, LocalDate from, LocalDate to) {
+        return jdbc.sql("""
+                        SELECT COUNT(*) AS days, ROUND(AVG(total))::int AS mean
+                        FROM (SELECT SUM(grams) AS total FROM protein_entries
+                              WHERE user_id = :userId AND log_date BETWEEN :from AND :to GROUP BY log_date) t
+                        """)
+                .param("userId", userId).param("from", from).param("to", to)
+                .query((rs, n) -> rs.getInt("days") == 0 ? null : new IntakeAverage(rs.getInt("mean"), rs.getInt("days")))
+                .optional();
     }
 }

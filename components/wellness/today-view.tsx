@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Ellipsis } from "lucide-react";
@@ -19,8 +20,8 @@ const QUICK_WATER_ML = 250;
 const QUICK_PROTEIN_G = 20;
 
 /**
- * The whole Today view: one line per visible metric, each with one primary button. No charts, no history. The lines
- * are plain text for now; they become links when the metric pages exist.
+ * The whole Today view: one line per visible metric, each with one primary button. No charts, no history. The label and
+ * value are one link to the metric's page, where the detail lives.
  */
 export function TodayView({ today, suggestions, timeZone }: { today: Today; suggestions: ProteinSuggestion[]; timeZone: string }) {
   const router = useRouter();
@@ -56,8 +57,9 @@ export function TodayView({ today, suggestions, timeZone }: { today: Today; sugg
 }
 
 /** One line: label, value, and its actions, with an optional progress line and a short-lived note underneath. */
-function Line({ metric, label, value, muted, goalText, percent, reached, actions, footer }: {
+function Line({ metric, href, label, value, muted, goalText, percent, reached, actions, footer }: {
   metric: string;
+  href: string;
   label: string;
   value: string;
   muted?: boolean;
@@ -70,11 +72,13 @@ function Line({ metric, label, value, muted, goalText, percent, reached, actions
   return (
     <li className="flex flex-col gap-1.5 px-4 py-3" data-metric={metric}>
       <div className="flex min-h-11 items-center gap-3">
-        <span className="w-[4.5rem] shrink-0 text-sm font-medium">{label}</span>
-        <span className="num min-w-0 flex-1 text-lg leading-tight" data-value>
-          <span className={muted ? "text-muted-foreground" : "font-medium"}>{value}</span>
-          {goalText && <span className="text-sm font-normal text-muted-foreground"> {goalText}</span>}
-        </span>
+        <Link href={href} className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+          <span className="w-[4.5rem] shrink-0 text-sm font-medium">{label}</span>
+          <span className="num min-w-0 flex-1 text-lg leading-tight" data-value>
+            <span className={muted ? "text-muted-foreground" : "font-medium"}>{value}</span>
+            {goalText && <span className="text-sm font-normal text-muted-foreground"> {goalText}</span>}
+          </span>
+        </Link>
         <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
       </div>
       {percent !== null && percent !== undefined && (
@@ -103,6 +107,7 @@ function SleepLine({ today, timeZone, onChanged }: { today: Today; timeZone: str
   return (
     <Line
       metric="sleep"
+      href="/wellness/sleep"
       label="Sleep"
       value={entry ? formatMinutes(entry.durationMinutes) : "Not logged"}
       muted={!entry}
@@ -170,6 +175,7 @@ function WaterLine({ total, goal, percent, reached, onChanged }: {
   return (
     <Line
       metric="water"
+      href="/wellness/water"
       label="Water"
       value={formatMl(total)}
       goalText={goal ? `of ${formatMl(goal)}` : null}
@@ -245,6 +251,7 @@ function ProteinLine({ total, goal, percent, reached, suggestions, onChanged }: 
   return (
     <Line
       metric="protein"
+      href="/wellness/protein"
       label="Protein"
       value={formatGrams(total)}
       goalText={goal ? `of ${formatGrams(goal)}` : null}

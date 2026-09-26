@@ -32,3 +32,27 @@ export type ProteinAdded = { entry: { id: string; date: string; grams: number; l
 
 /** One of the person's own past labels with the grams last logged for it. */
 export type ProteinSuggestion = { label: string; grams: number; uses: number };
+
+// ---- metric pages ----------------------------------------------------------------------------
+
+export type SleepPoint = { date: string; bedtime: string; wakeTime: string; durationMinutes: number };
+export type SleepAverage = { durationMinutes: number; entries: number };
+export type SleepSeries = { from: string; to: string; points: SleepPoint[]; average: SleepAverage | null; previousAverage: SleepAverage | null };
+
+/** The mean daily total over the days that have an entry, in whole units, and how many such days. */
+export type IntakeAverage = { amount: number; days: number };
+
+export type WaterSeries = {
+  from: string; to: string; goalMl: number | null;
+  points: { date: string; totalMl: number }[]; average: IntakeAverage | null; previousAverage: IntakeAverage | null;
+};
+export type ProteinSeries = {
+  from: string; to: string; goalG: number | null;
+  points: { date: string; totalG: number }[]; average: IntakeAverage | null; previousAverage: IntakeAverage | null;
+};
+
+export type WaterEntry = { id: string; date: string; amountMl: number; loggedAt: string };
+export type ProteinEntry = { id: string; date: string; grams: number; label: string | null; loggedAt: string };
+
+export type WaterDay = { date: string; totalMl: number; goalMl: number | null; progressPercent: number | null; goalReached: boolean; entries: WaterEntry[] };
+export type ProteinDay = { date: string; totalG: number; goalG: number | null; progressPercent: number | null; goalReached: boolean; entries: ProteinEntry[] };

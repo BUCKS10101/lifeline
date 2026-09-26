@@ -14,6 +14,8 @@ export type BarChartProps = {
   series: BarSeries[];
   unit: string;
   xStyle: XStyle;
+  /** A horizontal reference line, such as a daily goal. Drawn dashed. */
+  reference?: { value: number; label: string } | null;
   label: string;
   rowHeader?: string;
 };
@@ -37,6 +39,8 @@ export function BarChart(props: BarChartProps) {
     },
   }));
 
+  const caption = props.reference ? `${props.label}. ${props.reference.label}: ${f.value(props.reference.value)}.` : props.label;
+
   return (
     <figure className="m-0" aria-label={props.label} data-chart data-points={props.points.length}>
       <div className="h-64 w-full [&_*]:outline-none" aria-hidden>
@@ -49,8 +53,14 @@ export function BarChart(props: BarChartProps) {
             {s.label}
           </li>
         ))}
+        {props.reference && (
+          <li className="flex items-center gap-1.5">
+            <span className="w-4 border-t border-dashed border-muted-foreground" />
+            {props.reference.label}
+          </li>
+        )}
       </ul>
-      <ChartDataTable caption={props.label} rowHeader={props.rowHeader ?? "Week"} columns={columns} rows={rows} />
+      <ChartDataTable caption={caption} rowHeader={props.rowHeader ?? "Week"} columns={columns} rows={rows} />
     </figure>
   );
 }

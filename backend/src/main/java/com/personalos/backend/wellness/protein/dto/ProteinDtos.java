@@ -1,5 +1,6 @@
 package com.personalos.backend.wellness.protein.dto;
 
+import com.personalos.backend.wellness.dto.WellnessDtos.IntakeAverage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -37,4 +38,13 @@ public final class ProteinDtos {
 
     /** One of the person's own past labels, with the grams they logged with it last and how often they used it. */
     public record ProteinSuggestion(String label, int grams, int uses) {}
+
+    /** One calendar day's total. Days without an entry are listed with 0, so a chart's axis is honest. */
+    public record ProteinPoint(LocalDate date, int totalG) {}
+
+    /**
+     * Daily totals from {@code from} to {@code to} (inclusive, zero-filled), the optional goal, and the average per day
+     * that has an entry for the range and for the equally long period just before it (each null when it has no such day).
+     */
+    public record ProteinSeries(LocalDate from, LocalDate to, Integer goalG, List<ProteinPoint> points, IntakeAverage average, IntakeAverage previousAverage) {}
 }
