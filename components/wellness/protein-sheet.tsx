@@ -63,7 +63,7 @@ export function ProteinSheet({ trigger, children, suggestions, onAdd }: {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger render={trigger}>{children}</SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:mx-auto sm:max-w-lg">
+      <SheetContent side="bottom" className="max-h-[90dvh] gap-0 overflow-y-auto p-0 sm:mx-auto sm:max-w-lg">
         <SheetHeader className="gap-1 border-b p-4">
           <SheetTitle>Log protein</SheetTitle>
           <SheetDescription>Add grams, with an optional label to find it again.</SheetDescription>

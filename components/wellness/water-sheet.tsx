@@ -55,7 +55,7 @@ export function WaterSheet({ trigger, children, onAdd }: {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger render={trigger}>{children}</SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[90vh] gap-0 p-0 sm:mx-auto sm:max-w-lg">
+      <SheetContent side="bottom" className="max-h-[90dvh] gap-0 p-0 sm:mx-auto sm:max-w-lg">
         <SheetHeader className="gap-1 border-b p-4">
           <SheetTitle>Log water</SheetTitle>
           <SheetDescription>Add a drink in millilitres.</SheetDescription>

@@ -102,8 +102,10 @@
   --accent-foreground: oklch(0.95 0.004 260);
   --destructive: oklch(0.72 0.17 20);
   --border: oklch(0.29 0.007 260);
-  --input: oklch(0.34 0.008 260);
-  --ring: oklch(0.9 0.19 125 / 60%);
+  /* Form-control borders: 3.35:1 against the card (WCAG 1.4.11 asks for 3:1 on the boundary of a control). Was 0.34, about 1.6:1. */
+  --input: oklch(0.52 0.01 260);
+  /* Focus ring: opaque lime. The utilities draw it at 50% (4.3:1 on the card, was 2.3:1 with the old 60% token halved again). */
+  --ring: oklch(0.9 0.19 125);
   --record: oklch(0.82 0.15 78);
   /* Chart palette. 1 is the primary lime (single-series charts); 2 is a neutral for raw readings and secondary lines;
      3-5 are distinct hues for stacked groups. Amber (--record) is deliberately not here: it is reserved for PRs. */
@@ -119,7 +121,7 @@
   --sidebar-accent: oklch(0.24 0.006 260);
   --sidebar-accent-foreground: oklch(0.95 0.004 260);
   --sidebar-border: oklch(0.29 0.007 260);
-  --sidebar-ring: oklch(0.9 0.19 125 / 60%);
+  --sidebar-ring: oklch(0.9 0.19 125);
 }
 
 /* Dark-first: the app always renders dark (<html class="dark">). */

@@ -99,7 +99,7 @@ export function CustomizeSheet({ trigger, children, preferences, onSaved }: {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger render={trigger}>{children}</SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:mx-auto sm:max-w-lg">
+      <SheetContent side="bottom" className="max-h-[90dvh] gap-0 overflow-y-auto p-0 sm:mx-auto sm:max-w-lg">
         <SheetHeader className="gap-1 border-b p-4">
           <SheetTitle>Customize</SheetTitle>
           <SheetDescription>Choose what to show and set optional daily goals. Hidden metrics keep their data.</SheetDescription>
