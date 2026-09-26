@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,5 +76,25 @@ public class ProteinService {
 
     private static ProteinEntryResponse toResponse(ProteinEntry e) {
         return new ProteinEntryResponse(e.getId(), e.getLogDate(), e.getGrams(), e.getLabel(), e.getLoggedAt());
+    }
+
+    private static final int DEFAULT_SERIES_DAYS = 14;
+    private static final int MAX_SERIES_DAYS = 366;
+
+    /** Defaults to the last 14 days ending today in the person's timezone; at most 366 days. */
+    @Transactional(readOnly = true)
+    public ProteinSeries series(UUID userId, LocalDate from, LocalDate to) {
+        LocalDate end = to != null ? to : dates.today(userId);
+        LocalDate start = from != null ? from : end.minusDays(DEFAULT_SERIES_DAYS - 1);
+        if (start.isAfter(end)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_RANGE", "'from' must not be after 'to'");
+        }
+        long days = ChronoUnit.DAYS.between(start, end) + 1;
+        if (days > MAX_SERIES_DAYS) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_RANGE", "The range can be at most " + MAX_SERIES_DAYS + " days");
+        }
+        return new ProteinSeries(start, end, preferences.get(userId).proteinGoalG(), queries.series(userId, start, end),
+                queries.average(userId, start, end).orElse(null),
+                queries.average(userId, start.minusDays(days), start.minusDays(1)).orElse(null));
     }
 }

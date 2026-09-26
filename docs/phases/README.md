@@ -9,7 +9,7 @@ Built one phase at a time. Each phase has its own file with a goal, a checklist 
 | 2 Core product | 2 | [Core dashboard and app shell](phase-02-shell.md) | Done |
 | 2 Core product | 3 | [Fitness and workout system](phase-03-fitness.md) | Done (functionality in #5, UI redesign in #6) |
 | 2 Core product | 4 | [Weight and fitness analytics](phase-04-weight-analytics.md) | Done |
-| 2 Core product | 5 | [Wellness tracking (sleep, water, protein)](phase-05-wellness.md) | In progress (Checkpoints 1-3 of 4 done) |
+| 2 Core product | 5 | [Wellness tracking (sleep, water, protein)](phase-05-wellness.md) | Done |
 | 3 Personal OS | 6 | Tasks, goals and habits | Not started |
 | 3 Personal OS | 7 | Calendar and reminders | Not started |
 | 4 Integrations | 8 | DSA / LeetCode integration | Not started |

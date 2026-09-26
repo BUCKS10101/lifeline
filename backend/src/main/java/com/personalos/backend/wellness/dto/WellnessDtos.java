@@ -30,6 +30,11 @@ public final class WellnessDtos {
             @Min(240) @Max(960) Integer sleepGoalMinutes
     ) {}
 
+    // ---- Series (water and protein) ------------------------------------------------------------
+
+    /** The mean daily total over the days that have at least one entry, in whole units, and how many such days there were. */
+    public record IntakeAverage(int amount, int days) {}
+
     // ---- Today ---------------------------------------------------------------------------------
 
     /** Last night (the night ending today), or null when it has not been logged. Progress is against the optional sleep goal. */
