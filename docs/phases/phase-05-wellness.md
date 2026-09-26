@@ -295,3 +295,19 @@ The backend is naturally two pieces: sleep is the hard one (time resolution), an
 - **A tab left open across midnight** shows the previous day until refreshed.
 - **Protein suggestions come from the user's own labels**, so they are empty for a new user and only as good as the labels typed.
 - **Two goals stores** will exist (these preferences and Phase 6 Goals), so the migration path needs care, the same risk as the weight target.
+
+## Checklists
+
+- [x] Checkpoint 1: schema, preferences and sleep
+- [ ] Checkpoint 2: water, protein and Today
+- [ ] Checkpoint 3: Today view
+- [ ] Checkpoint 4: metric pages, dashboard and verification
+
+## Checkpoint 1 notes
+
+- **Scope:** `V7__wellness.sql` (all four tables, reviewed once), `SleepTimes`, the preferences endpoints (2, 3) and the sleep endpoints (4 to 7). The water and protein tables exist but nothing uses them yet. No frontend.
+- **Code:** a new `wellness` module (`wellness.sleep` sub-package, plus preferences at the root). Like `weight` and `fitness` it depends on `auth` only through `ProfileService.timezoneOf`. `SleepEntry` is a read-only (`@Immutable`) entity; every write is one atomic native upsert (`ON CONFLICT (user_id, sleep_date) DO UPDATE ... RETURNING (xmax = 0)`), which is what makes parallel writes safe and tells `201` from `200`. Averages and the series are aggregated in SQL (`SleepQueries`). Preferences use one small `JdbcClient` upsert.
+- **Endpoints:** `PUT`/`GET`/`DELETE` on `/api/v1/sleep-entries` (a night is addressed by its wake-up date), `GET /api/v1/sleep/series`, `GET`/`PUT /api/v1/wellness/preferences`. Error codes: `VALIDATION_FAILED` (bad clock format), `SLEEP_DURATION_INVALID`, `DATE_IN_FUTURE`, `DATE_TOO_EARLY`, `INVALID_RANGE`, `NOT_FOUND`.
+- **Time resolution** is the plan's rule, in one pure class. Behaviours worth knowing: equal times have their own message; a clock time skipped by the clocks going forward is read as the moment the clocks jump to; a wake time that happens twice means the first occurrence, and a bedtime that happens twice means the latest before waking. Each night stores the zone it was logged in, so history does not move if the profile timezone changes later (tested).
+- **Series:** default the last 30 days ending today (the person's timezone), at most 366 days; `previousAverage` covers the equally long period just before `from`; each average is null when its period has no nights and is rounded half up to whole minutes.
+- **Tests:** `SleepTimesTest` (18), `WellnessSchemaTest` (27), `SleepApiTest` (34), `WellnessPreferencesApiTest` (15), `SleepConcurrencyTest` (2). Full backend suite 533 passing. Mutation-checked: dropping the previous-day rule, changing the 20-hour limit, ignoring the profile timezone, dropping the user filter on delete and on the series, and widening the previous period are each caught.
