@@ -10,13 +10,13 @@
 | 1 | **One weight entry per day**, upserted by date. |
 | 2 | The **target lives in its own small table** (`weight_targets`), owned by the weight module. The starting weight is derived from entries, not stored. |
 | 3 | The trend line is a **7-day calendar-window mean**, not an exponential moving average. |
-| 4 | Analytics live **inside their owning modules** (`weight`, `fitness`). The `analytics` package stays reserved for the cross-module Phase 8. |
+| 4 | Analytics live **inside their owning modules** (`weight`, `fitness`). The `analytics` package stays reserved for the cross-module Phase 9. |
 | 5 | **Recharts**, behind our own chart wrapper components, client-only and lazy-loaded. |
 | 6 | The stacked volume chart uses **4 movement groups** (Push, Pull, Legs, Core/Full body), not 12 muscle colours. |
 | 7 | A new page, **`/fitness/progress`**, instead of adding analytics to the hub. |
 | 8 | Weight is **20 to 500 kg**, dates run **from 2000-01-01 to today** (in the user's timezone). |
 | 9 | All **12 endpoints** listed below. |
-| 10 | The browser-check scripts are **committed to the repo** under `tools/browser-checks/`, narrowly scoped to browser verification. This is not the Playwright phase (Phase 10) coming early. |
+| 10 | The browser-check scripts are **committed to the repo** under `tools/browser-checks/`, narrowly scoped to browser verification. This is not the Playwright phase (Phase 11) coming early. |
 
 ## 1. Architecture
 
@@ -24,7 +24,7 @@
 - Fitness analytics are added to the existing `fitness` module (`FitnessAnalyticsService` and controller) and reuse `PersonalRecordCalculator` and the stored `performed_on` dates.
 - **Nothing is stored except the entries and the target.** Averages, trends, buckets, progress, volume and PR history are computed at read time.
 - Series, buckets and the trend use Postgres (`date_trunc` and a moving-average window over `entry_date`). This is the first native SQL in the project. It is kept in one small query class and tested against real PostgreSQL.
-- No caching (Phase 9). Query cost on a two-year data set is measured and reported instead.
+- No caching (Phase 10). Query cost on a two-year data set is measured and reported instead.
 
 ## 2. Database (`V6__weight.sql`)
 
@@ -138,16 +138,16 @@ The direction is determined from the start and the target rather than assumed:
 
 ## 8. Explicitly deferred
 
-- A general Goals module (Phase 5); the weight target is deliberately minimal so it can migrate.
+- A general Goals module (Phase 6); the weight target is deliberately minimal so it can migrate.
 - Body fat, measurements, photos, pounds, CSV import or export, health-app sync.
-- Forecasting and prediction lines; correlating weight with training (Phase 8); smoothing beyond a 7-day mean.
-- Caching (Phase 9), weigh-in reminders (Phase 6), Playwright (Phase 10).
+- Forecasting and prediction lines; correlating weight with training (Phase 9); smoothing beyond a 7-day mean.
+- Caching (Phase 10), weigh-in reminders (Phase 7), Playwright (Phase 11).
 
 ## 9. Risks accepted
 
 - Recharts bundle size and server-rendering quirks (mitigated by client-only, lazy-loaded charts).
-- PR history is computed over all sets per request; fine at personal scale until Phase 9.
-- A body-weight goal will eventually exist in two forms (this target and Phase 5 Goals), so the migration path needs care.
+- PR history is computed over all sets per request; fine at personal scale until Phase 10.
+- A body-weight goal will eventually exist in two forms (this target and Phase 6 Goals), so the migration path needs care.
 - Moving-average edge cases (the first 6 days have a shorter window) are tested explicitly.
 
 ## Checklists
@@ -184,14 +184,14 @@ Filled in when implementation starts.
 
 ## Checkpoint 3 notes
 
-- Endpoints: `GET /api/v1/fitness/analytics/volume`, `GET /api/v1/fitness/personal-records`, `GET /api/v1/exercises/{id}/progression`, `GET /api/v1/exercises/{id}/personal-records`. All derived at read time from the existing tables, with no new tables, migrations or caching. Code is in `fitness` (`FitnessAnalyticsQueries`, `FitnessAnalyticsService`, `FitnessAnalyticsController`; the two exercise routes live in `ExerciseController`). The `analytics` package stays reserved for Phase 8.
+- Endpoints: `GET /api/v1/fitness/analytics/volume`, `GET /api/v1/fitness/personal-records`, `GET /api/v1/exercises/{id}/progression`, `GET /api/v1/exercises/{id}/personal-records`. All derived at read time from the existing tables, with no new tables, migrations or caching. Code is in `fitness` (`FitnessAnalyticsQueries`, `FitnessAnalyticsService`, `FitnessAnalyticsController`; the two exercise routes live in `ExerciseController`). The `analytics` package stays reserved for Phase 9.
 - **Training volume** = sum of `weight_kg x reps` over **working sets** (warm-ups excluded) of **COMPLETED** workouts, dated by the stored `performed_on`. In-progress workouts and other users are excluded. A completed workout with only warm-ups counts as a workout but adds no sets or volume.
 - **Movement groups**: no such classification existed, so `MovementGroup.of(MuscleGroup)` is the single mapping from the stored muscle group. PUSH = chest, shoulders, triceps; PULL = back, biceps, forearms; LEGS = quads, hamstrings, glutes, calves; CORE_FULL_BODY = core, full body. Every point lists all four groups, zero-filled. SQL groups by muscle group and Java maps them.
 - **Volume buckets** are ISO weeks (Monday start) or calendar months, zero-filled from the bucket containing `from` to the one containing `to`. `periodStart` of the first bucket can be before `from`; only workouts inside `[from, to]` are counted. `granularity` is `weekly` (default) or `monthly`, case-insensitive; anything else is `INVALID_GRANULARITY`. Defaults: the last 12 weeks or 12 months ending today in the user's timezone. Ranges over 1830 days are rejected.
 - **Progression** is one point per completed session that has at least one working set (no fabricated points), oldest first (date, then start time). `topSet` is the heaviest working set, ties broken by more reps. `bestEstimated1rmKg` is the best Epley estimate of the session (weight x (30 + reps) / 30, and just the weight for a single rep). `volumeKg` and `workingSets` exclude warm-ups. Default range is the last 365 days. An exercise the caller cannot see (someone else's, or unknown) is 404; built-ins are visible.
 - **Personal records** reuse `PersonalRecordCalculator`, so they always agree with the flags in workout detail (a test compares them). A set is a record only when strictly better than every earlier working set, and the first working set is a baseline. **Ties are never records.** One set can be several records: one event per set and type (`WEIGHT`, `ESTIMATED_1RM`, `REPS_AT_WEIGHT`).
 - **Ordering** is total, so pages never overlap: newest `performedOn`, then latest workout start, then highest set number, then exercise name and id, then type (`WEIGHT`, `ESTIMATED_1RM`, `REPS_AT_WEIGHT`). The exercise-specific endpoint is paginated (`page`, `size` 1..100); the global one takes `limit` (default 10, 1..50) and returns a prefix of the same ordering.
-- **Limitation**: PR events are derived in Java from one exercise's history (or all of the user's set history for the global endpoint), sorted and sliced in memory, because the single definition of a PR lives in the calculator. Volume and progression are aggregated in SQL. If the global endpoint becomes slow at large histories, Phase 9 caching is the planned answer.
+- **Limitation**: PR events are derived in Java from one exercise's history (or all of the user's set history for the global endpoint), sorted and sliced in memory, because the single definition of a PR lives in the calculator. Volume and progression are aggregated in SQL. If the global endpoint becomes slow at large histories, Phase 10 caching is the planned answer.
 - Tests: `FitnessAnalyticsTest` (31). Full backend suite results are in the PR description.
 
 ## Checkpoint 4 notes
@@ -224,4 +224,4 @@ Filled in when implementation starts.
 - **Performance smoke test:** `AnalyticsPerformanceTest` seeds about two years (730 daily weights, 312 finished workouts, 7,800 sets) with bulk SQL and checks every analytics endpoint for correct results (workout counts, that warm-ups add no working sets, point counts) and a generous 3 s limit. Measured locally on Testcontainers Postgres: every endpoint 7 to 49 ms.
 - **Verification:** backend suite, all seven browser parts (Phase 3 regression is parts 1 to 5), typecheck, eslint and the production build were run on the final code; results are in the PR description.
 - **Deviations from the plan's endpoint tables** (all decided in earlier checkpoints): volume points carry `byMovementGroup` (four groups, always listed) instead of `byMuscleGroup`; `granularity` is `DAILY`/`WEEKLY`/`MONTHLY` on the weight series and `weekly`/`monthly` on volume; the weight series has no 731-day cap (volume and progression are capped at 1,830 days); `GET /weight/target` returns 404, not 204, when there is no target.
-- **Known limitations:** personal-record events are derived in memory per request (Phase 9 caching if it ever matters); the dashboard card has no separate "unavailable" browser check because a card-level failure cannot be produced without also failing the page's session check; the browser checks are not run in CI (Playwright is Phase 10).
+- **Known limitations:** personal-record events are derived in memory per request (Phase 10 caching if it ever matters); the dashboard card has no separate "unavailable" browser check because a card-level failure cannot be produced without also failing the page's session check; the browser checks are not run in CI (Playwright is Phase 11).

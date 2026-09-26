@@ -11,7 +11,7 @@
 | Profile API | `PATCH /api/v1/profile`, limited to `displayName` and `timezone` | Smallest change that makes timezone editable |
 | Future modules | Shown in the nav as disabled entries with a "Soon" badge | Shows the product shape without dead pages |
 | Data | No fake data, no mock numbers, no placeholder feature pages | Every empty card says which phase brings its data |
-| Playwright | Deferred to Phase 10 | Needs backend, Postgres and Redis in CI |
+| Playwright | Deferred to Phase 11 | Needs backend, Postgres and Redis in CI |
 | Dependencies | Remove only genuinely unused ones | See the audit below |
 
 ## Starting point (verified on `main` after PR #3)
@@ -84,11 +84,11 @@ Checked by searching `app/`, `components/` and `lib/` for imports.
 
 ## Deferred
 
-- Real data and widgets: fitness (Phase 3), weight and charts (Phase 4), tasks, habits and goals (Phase 5), calendar and reminders (Phase 6), DSA (Phase 7), unified analytics (Phase 8)
-- Recharts (returns in Phase 4), Redis dashboard caching (Phase 9)
+- Real data and widgets: fitness (Phase 3), weight and charts (Phase 4), tasks, habits and goals (Phase 6), calendar and reminders (Phase 7), DSA (Phase 8), unified analytics (Phase 9)
+- Recharts (returns in Phase 4), Redis dashboard caching (Phase 10)
 - Light theme toggle, command palette, search, notification bell, avatar upload
-- Rate limiting and lockout (Phases 9 and 11)
-- Playwright end-to-end tests (Phase 10)
+- Rate limiting and lockout (Phases 10 and 12)
+- Playwright end-to-end tests (Phase 11)
 - `proxy.ts` optimistic redirect (the server-side check is enough for now)
 
 ## Implementation notes
@@ -110,4 +110,4 @@ Checked by searching `app/`, `components/` and `lib/` for imports.
 - Logged-out `/dashboard` and `/settings` return 307 to `/login`; logged-in `/login` returns 307 to `/dashboard`.
 - Backend stopped: a valid session stays on `/dashboard` and sees "We can't reach the server"; logged-out visitors still redirect.
 - Settings saved through the real form: profile persisted, sidebar name and greeting updated; an invalid timezone shows the backend's error next to the field.
-- Not covered: automated browser tests (Phase 10), light theme, keyboard walkthrough of the desktop user menu.
+- Not covered: automated browser tests (Phase 11), light theme, keyboard walkthrough of the desktop user menu.

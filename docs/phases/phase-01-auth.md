@@ -48,11 +48,11 @@
 - Spring Boot 3.3 defaults to the non-indexed Redis session repository; `repository-type: indexed` is required to revoke sessions by user.
 - Tests share one PostgreSQL and one Redis container (`AbstractIntegrationTest`).
 
-- Frontend verified through the Next.js origin (proxy, cookie, protected-page redirects) with curl, and login/register pages checked visually in headless Chrome. The forms' click-through behaviour in a real browser is not yet covered by an automated test; Playwright end-to-end tests come in Phase 10.
+- Frontend verified through the Next.js origin (proxy, cookie, protected-page redirects) with curl, and login/register pages checked visually in headless Chrome. The forms' click-through behaviour in a real browser is not yet covered by an automated test; Playwright end-to-end tests come in Phase 11.
 
 ## Out of scope
 
-Rate limiting and account lockout (Phase 9 and 11), social login, MFA, the Resend adapter (Phase 6), the full dashboard (Phase 2).
+Rate limiting and account lockout (Phase 10 and 12), social login, MFA, the Resend adapter (Phase 7), the full dashboard (Phase 2).
 
 ## Definition of done
 
