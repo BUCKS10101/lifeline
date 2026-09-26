@@ -9,9 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface SleepEntryRepository extends JpaRepository<SleepEntry, UUID> {
+
+    /** The night that ended on this date, if it was logged. */
+    Optional<SleepEntry> findByUserIdAndSleepDate(UUID userId, LocalDate sleepDate);
 
     /** Nights in an inclusive range of wake-up dates. Sorting comes from the pageable. */
     Page<SleepEntry> findByUserIdAndSleepDateBetween(UUID userId, LocalDate from, LocalDate to, Pageable pageable);

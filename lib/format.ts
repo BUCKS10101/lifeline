@@ -117,3 +117,20 @@ export function formatShortDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-").map(Number);
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
 }
+
+/** "7 h 42 min", "45 min", "8 h". */
+export function formatMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+}
+
+/** Millilitres below a litre ("250 ml"), litres above ("1.25 L", "2 L"). */
+export function formatMl(ml: number): string {
+  return ml < 1000 ? `${ml} ml` : `${Number((ml / 1000).toFixed(2))} L`;
+}
+
+export function formatGrams(grams: number): string {
+  return `${grams} g`;
+}
