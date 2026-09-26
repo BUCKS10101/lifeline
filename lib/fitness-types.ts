@@ -116,3 +116,43 @@ export type FitnessSummary = {
   totalDurationMinutes: number;
   volumeByMuscleGroup: { muscleGroup: MuscleGroup; volumeKg: number; sets: number }[];
 };
+
+// ---- analytics -----------------------------------------------------------------------------
+
+export type MovementGroup = "PUSH" | "PULL" | "LEGS" | "CORE_FULL_BODY";
+
+export type MovementGroupVolume = { movementGroup: MovementGroup; volumeKg: number; sets: number };
+
+/** One week or month. {@code periodStart} can be before the requested start for the first bucket. */
+export type VolumePoint = {
+  periodStart: string;
+  workouts: number;
+  workingSets: number;
+  volumeKg: number;
+  byMovementGroup: MovementGroupVolume[];
+};
+
+export type VolumeSeries = { granularity: "weekly" | "monthly"; from: string; to: string; points: VolumePoint[] };
+
+export type ProgressionPoint = {
+  workoutId: string;
+  performedOn: string;
+  topSet: { weightKg: number; reps: number };
+  bestEstimated1rmKg: number;
+  volumeKg: number;
+  workingSets: number;
+};
+
+export type ExerciseProgression = { from: string; to: string; points: ProgressionPoint[] };
+
+export type PersonalRecordEvent = {
+  performedOn: string;
+  workoutId: string;
+  setId: string;
+  type: PersonalRecordType;
+  weightKg: number;
+  reps: number;
+  estimated1rmKg: number;
+};
+
+export type ExercisePersonalRecord = { exercise: { id: string; name: string }; record: PersonalRecordEvent };

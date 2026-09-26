@@ -159,8 +159,8 @@ Filled in when implementation starts.
 - [x] Checkpoint 2: weight analytics
 - [x] Checkpoint 3: fitness analytics
 - [x] Checkpoint 4: chart foundation and `/weight`
-- [ ] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
-- [ ] Checkpoint 6: verification
+- [x] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
+- [x] Checkpoint 6: verification
 
 ## Checkpoint 1 notes
 
@@ -207,3 +207,21 @@ Filled in when implementation starts.
 - **Bugs found by the browser checks and fixed:** functions passed from a server component to the client chart (the page crashed once an entry existed); the target row was wider than 390 px; and the screen-reader table itself widened the page, because `sr-only` does not clip a `<table>` (it is now on a wrapper).
 - **Harness change:** `Browser.overflow()` now compares against the configured viewport width, not `window.innerWidth`. In mobile emulation Chrome grows `innerWidth` to fit overflowing content, which had hidden the target-row overflow. It also ignores `.sr-only` content. All earlier parts still pass with the stricter check.
 - **Verification:** typecheck, eslint and the production build are clean; browser checks 373/373 (parts 1 to 5: 304, new part 6: 69); backend suite unchanged and passing.
+
+## Checkpoint 5 notes
+
+- **Chart foundation:** `BarChart` (stacked, lazy, browser-only) joins `LineChart` in `components/charts/`, with the same accessible table (plus a Total column when stacked), tap and hover tooltips, and no animation. `RangeSelector` and `Pagination` gained optional parameters so a page can keep several independent query parameters (`range`, `page`, `prpage`).
+- **Movement groups:** the grouping is decided by the backend (`MovementGroup.of(MuscleGroup)`); `lib/movement-groups.ts` is the only frontend file that names and colours them (Push lime, Pull blue, Legs violet, Core / full body teal; amber stays for PRs).
+- **`/fitness/progress`:** training volume stacked by movement group and workouts per week, then the 10 most recent personal records. Ranges are `8w`, `12w` (default), `6m` (weekly bars) and `1y` (monthly bars), always whole weeks or months so the first bar is never partial. A set that is several records is shown once with all its badges.
+- **Exercise page:** a progression chart (top set and best estimated 1RM per session; ranges `90d`, `6m`, `1y` (default), `5y`, the longest the backend allows in one request) and a paged record history. The two paged lists use `page` and `prpage`, and the links keep each other's parameters. Both sections only appear when the exercise has history.
+- **Hub and dashboard:** the fitness hub gets a Progress link (the four links form a 2 x 2 grid on a phone, and wrap on a tablet). The dashboard's Body weight card is real: current weight, 7-day change, progress bar and what is left to the target, with "Log weight" when empty. The other dashboard cards are still "Soon".
+- **Bugs found and fixed:** the dashboard read "82.4kg" to a screen reader (no space between the spans); the fitness hub header overflowed at 768 px once it had four links; and the hub's "View all" link was under 40 px tall (its hit area is now 44 px, with negative margins so the layout does not move).
+- **Browser checks:** new part `07-progress` (68 checks). Because the shared hub and dashboard changed, parts 1 to 6 were re-run. Part 5's inline "clipped" count now ignores `.sr-only` content, exactly like the harness's `overflow()`: the hidden tables are clipped by a 1 px wrapper (the page's real overflow flag was false and nothing visible was outside the viewport), so counting them was a false positive.
+- **Harness:** `sql()` runs SQL in the dev database container for fixtures the API cannot create (back-dated workouts).
+
+## Checkpoint 6 notes
+
+- **Performance smoke test:** `AnalyticsPerformanceTest` seeds about two years (730 daily weights, 312 finished workouts, 7,800 sets) with bulk SQL and checks every analytics endpoint for correct results (workout counts, that warm-ups add no working sets, point counts) and a generous 3 s limit. Measured locally on Testcontainers Postgres: every endpoint 7 to 49 ms.
+- **Verification:** backend suite, all seven browser parts (Phase 3 regression is parts 1 to 5), typecheck, eslint and the production build were run on the final code; results are in the PR description.
+- **Deviations from the plan's endpoint tables** (all decided in earlier checkpoints): volume points carry `byMovementGroup` (four groups, always listed) instead of `byMuscleGroup`; `granularity` is `DAILY`/`WEEKLY`/`MONTHLY` on the weight series and `weekly`/`monthly` on volume; the weight series has no 731-day cap (volume and progression are capped at 1,830 days); `GET /weight/target` returns 404, not 204, when there is no target.
+- **Known limitations:** personal-record events are derived in memory per request (Phase 9 caching if it ever matters); the dashboard card has no separate "unavailable" browser check because a card-level failure cannot be produced without also failing the page's session check; the browser checks are not run in CI (Playwright is Phase 10).
