@@ -180,7 +180,7 @@ The default range is the current Monday to Sunday in the user's timezone.
 ```
 
 - One active workout per user, enforced by the partial unique index. A second start returns 409, and the UI offers Resume.
-- Abandoned workouts: the user can discard explicitly. There is no auto-expiry, because that needs background jobs (Phase 6). A forgotten workout stays resumable or discardable.
+- Abandoned workouts: the user can discard explicitly. There is no auto-expiry, because that needs background jobs (Phase 7). A forgotten workout stays resumable or discardable.
 - The server sets `started_at` and `finished_at` from its clock. Duration is wall-clock time.
 
 ## 7. Concurrency and transactions
@@ -207,7 +207,7 @@ Derived at read time by a pure `PersonalRecordCalculator` with no database acces
 
 - Ties are not PRs.
 - Editing or deleting history automatically corrects every flag, because nothing is stored.
-- Cost is O(sets of one exercise) per exercise per request, which is fine at personal scale. Caching is Phase 9.
+- Cost is O(sets of one exercise) per exercise per request, which is fine at personal scale. Caching is Phase 10.
 
 ## 9. Frontend
 
@@ -265,15 +265,15 @@ Derived at read time by a pure `PersonalRecordCalculator` with no database acces
 - Rest timer, supersets, drop sets and failure sets.
 - Charts and trends (Phase 4), body weight (Phase 4).
 - Editing sets of completed workouts.
-- Auto-abandoning stale workouts (needs Phase 6 jobs).
-- Planned workouts on the calendar (Phase 6).
+- Auto-abandoning stale workouts (needs Phase 7 jobs).
+- Planned workouts on the calendar (Phase 7).
 - Exercise images and instructions, import/export, sharing.
-- Caching (Phase 9), broader analytics (Phase 8), and Playwright (Phase 10).
+- Caching (Phase 10), broader analytics (Phase 9), and Playwright (Phase 11).
 
 ## 13. Risks accepted
 
 - Cross-user references are enforced in the service, not by foreign keys, so the isolation tests carry that weight.
-- PR calculation is O(history) per request until Phase 9.
+- PR calculation is O(history) per request until Phase 10.
 - Seeded built-in names are hard to change once users link history to them.
 
 ## Checklists
@@ -334,4 +334,4 @@ Bugs found by the browser checks and fixed:
 3. The sticky Finish bar floated 40 px above the bottom at the end of the page; it now stays docked, and on desktop it lines up with the cards.
 4. In the exercise picker a tap could land on a list that was about to change during a search; the list is now inert until results arrive.
 
-Not covered: automated browser tests (Playwright, Phase 10), CI on this branch, a real phone with a software keyboard.
+Not covered: automated browser tests (Playwright, Phase 11), CI on this branch, a real phone with a software keyboard.
