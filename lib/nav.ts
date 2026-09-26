@@ -22,7 +22,7 @@ export type NavItem = {
 export const MAIN_NAV: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Fitness", icon: Dumbbell, href: "/fitness" },
-  { label: "Weight", icon: Scale },
+  { label: "Weight", icon: Scale, href: "/weight" },
   { label: "Tasks", icon: ListChecks },
   { label: "Habits", icon: Flame },
   { label: "Goals", icon: Target },
