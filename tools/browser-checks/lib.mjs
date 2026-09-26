@@ -250,11 +250,11 @@ export class Browser {
   }
   /** Horizontal overflow: document wider than the viewport, or any visible element sticking out to the right. */
   overflow() {
-    return this.eval(`(() => { const de = document.documentElement; const w = window.innerWidth;
+    return this.eval(`(() => { const de = document.documentElement; const w = ${this.width ?? 'window.innerWidth'};
       const offenders = [...document.querySelectorAll('body *')].filter((e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
-        return r.width > 0 && r.right > w + 1 && s.position !== 'fixed' && !e.closest('[data-slot=sheet-content],[data-slot=dialog-content]'); })
+        return r.width > 0 && r.right > w + 1 && s.position !== 'fixed' && !e.closest('[data-slot=sheet-content],[data-slot=dialog-content],.sr-only'); })
         .map((e) => e.tagName + '.' + String(e.className).slice(0, 50)).slice(0, 5);
-      return { innerWidth: w, scrollWidth: de.scrollWidth, overflow: de.scrollWidth > de.clientWidth + 1, offenders }; })()`);
+      return { innerWidth: window.innerWidth, scrollWidth: de.scrollWidth, overflow: de.scrollWidth > w + 1, offenders }; })()`);
   }
   close() { try { this.ws.close(); } catch {} this.chrome.kill(); }
 }

@@ -56,3 +56,64 @@ export function formatSet(weightKg: number, reps: number): string {
 export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
+
+/** "+0.4 kg", "−1.2 kg" (a real minus sign) and "0 kg" for no change. */
+export function formatSignedKg(value: number): string {
+  if (value === 0) return "0 kg";
+  return `${value > 0 ? "+" : "−"}${formatNumber(Math.abs(value))} kg`;
+}
+
+/** "24 Sep 2026": a full date, for lists that can span years. */
+export function formatFullDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+    .format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+/** "Sep 2026" for a month bucket. */
+export function formatMonth(isoDate: string): string {
+  const [y, m] = isoDate.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, 1)));
+}
+
+/** Today's calendar date ("2026-09-24") in the given timezone. */
+export function todayIn(timeZone: string, now: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  } catch {
+    return now.toISOString().slice(0, 10);
+  }
+}
+
+/** Calendar arithmetic on an ISO date, with no timezone involved. */
+export function addDays(isoDate: string, days: number): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/** Months are clamped to the end of a shorter month (31 Mar minus 1 month is 28 Feb). */
+export function addMonths(isoDate: string, months: number): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const target = new Date(Date.UTC(y, m - 1 + months, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(d, lastDay));
+  return target.toISOString().slice(0, 10);
+}
+
+/** The Monday on or before the date (ISO weeks start on Monday). */
+export function startOfWeek(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const day = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0 is Sunday
+  return addDays(isoDate, -((day + 6) % 7));
+}
+
+/** The first day of the month the date is in. */
+export function startOfMonth(isoDate: string): string {
+  return `${isoDate.slice(0, 8)}01`;
+}
+
+/** "24 Sep": a compact date for chart axes. */
+export function formatShortDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+}

@@ -30,6 +30,7 @@ The runner first checks that the frontend, backend and Mailhog are reachable and
 | `03-flows` | Starting from Push, Pull, Legs and empty; resume; the 409 "already active" handling; discard; template and custom-exercise create, edit, duplicate, archive and delete; history pagination; deleting a completed workout; a desktop run and the tablet picker |
 | `04-backend-outage` | Stops the backend mid-workout, checks the error and that typed values are kept, restarts it and retries the same set (no duplicate), then checks every Fitness page while the backend is down and recovery |
 | `05-long-names-and-picker` | Very long and unbroken names on ten screens, plus a rapid-add stress of the exercise picker |
+| `06-weight` | The `/weight` page: empty and single-entry states, logging and same-day replacement, every range against the API, the accessible chart table, tooltips by mouse and by touch, weekly and monthly tables, target set/clear, inline edit, two-tap delete, paging, long notes, the nav link, overflow at 390/768/1280 px, and the backend going away and coming back |
 
 ## Notes
 - **Test data.** Each run registers fresh users (through Mailhog) and creates workouts in your local development database. Nothing is cleaned up. Do not point this at anything but a local dev stack.

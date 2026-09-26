@@ -158,7 +158,7 @@ Filled in when implementation starts.
 - [x] Checkpoint 1: schema and weight entries
 - [x] Checkpoint 2: weight analytics
 - [x] Checkpoint 3: fitness analytics
-- [ ] Checkpoint 4: chart foundation and `/weight`
+- [x] Checkpoint 4: chart foundation and `/weight`
 - [ ] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
 - [ ] Checkpoint 6: verification
 
@@ -193,3 +193,17 @@ Filled in when implementation starts.
 - **Ordering** is total, so pages never overlap: newest `performedOn`, then latest workout start, then highest set number, then exercise name and id, then type (`WEIGHT`, `ESTIMATED_1RM`, `REPS_AT_WEIGHT`). The exercise-specific endpoint is paginated (`page`, `size` 1..100); the global one takes `limit` (default 10, 1..50) and returns a prefix of the same ordering.
 - **Limitation**: PR events are derived in Java from one exercise's history (or all of the user's set history for the global endpoint), sorted and sliced in memory, because the single definition of a PR lives in the calculator. Volume and progression are aggregated in SQL. If the global endpoint becomes slow at large histories, Phase 9 caching is the planned answer.
 - Tests: `FitnessAnalyticsTest` (31). Full backend suite results are in the PR description.
+
+## Checkpoint 4 notes
+
+- **Scope:** chart foundation and the `/weight` page. No backend, migration or fitness-page change. `/fitness/progress`, exercise charts and the dashboard card are Checkpoint 5.
+- **Dependencies:** `recharts` 3.10.1, and `react-is` pinned to React's version (19.2.8): Recharts otherwise resolves `react-is` 16, which does not recognise React 19 elements.
+- **Charts** (`components/charts/`): `LineChart` is a client component that lazy-loads Recharts with `next/dynamic` and `ssr: false` (a reserved-height skeleton avoids layout shift). It takes plain data only (a `unit` and an `xStyle`), not functions, because a server component cannot pass functions to a client component. Every chart renders a `ChartDataTable` (a real table inside an `sr-only` wrapper, built from the same points) and hides the picture from assistive technology. Animation is off, tooltips work by hover and by tap, and the x axis is a real time axis, so gaps in the data look like gaps.
+- **Palette:** `--chart-1..5` are now real tokens: 1 is the primary lime (single series), 2 a neutral for raw readings, 3 to 5 hues for stacked groups in Checkpoint 5. Amber stays reserved for PRs.
+- **Ranges:** `?range=` is one of `30d`, `90d`, `6m`, `1y`, `all`; anything else falls back to 90d. Up to 6 months uses daily points plus the 7-day trend; `1y` and `all` use weekly averages with no trend line. The range links are ordinary links, so the server fetches the data and URLs are shareable.
+- **Page** (`app/(app)/weight/`): stats (current, 7 and 30 day change, this week's average), log form, chart with range links and a dashed target line, target panel (progress plus set/update/clear), weekly averages (last 8 whole weeks), monthly trend (last 12 whole months, shown as a list), and an entries list (10 per page) with inline edit and two-tap delete. Every number comes from the API; the frontend only formats.
+- **Logging** is `PUT /weight-entries/{date}`, so logging a day that already has an entry replaces it. Today (for the date default and its maximum) is computed in the user's timezone on the server.
+- **Nav:** Weight is a live link; Tasks, Habits, Goals, Calendar and DSA are unchanged "Soon" items.
+- **Bugs found by the browser checks and fixed:** functions passed from a server component to the client chart (the page crashed once an entry existed); the target row was wider than 390 px; and the screen-reader table itself widened the page, because `sr-only` does not clip a `<table>` (it is now on a wrapper).
+- **Harness change:** `Browser.overflow()` now compares against the configured viewport width, not `window.innerWidth`. In mobile emulation Chrome grows `innerWidth` to fit overflowing content, which had hidden the target-row overflow. It also ignores `.sr-only` content. All earlier parts still pass with the stricter check.
+- **Verification:** typecheck, eslint and the production build are clean; browser checks 373/373 (parts 1 to 5: 304, new part 6: 69); backend suite unchanged and passing.
