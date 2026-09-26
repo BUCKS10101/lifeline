@@ -21,6 +21,12 @@ const DEBUG_PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9333);
 const BACKEND_PROCESS = "com.personalos.backend.PersonalOsBackendApplication";
 const BACKEND_START_CMD = process.env.BACKEND_START_CMD ?? "./mvnw -B -q spring-boot:run";
 
+const POSTGRES_CONTAINER = process.env.POSTGRES_CONTAINER ?? "personal-os-postgres";
+/** Runs SQL against the dev database (through the Docker container). Only for fixtures the API cannot make, such as back-dated workouts. */
+export function sql(statement) {
+  return execSync(`docker exec -i ${POSTGRES_CONTAINER} psql -U postgres -d personal_os -v ON_ERROR_STOP=1 -q`, { input: statement }).toString();
+}
+
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function chromePath() {

@@ -40,7 +40,7 @@ try {
       const outside = [...document.querySelectorAll('main button, main a, main input, main select, main textarea, header button, header a')]
         .filter((e) => __h.visible(e) && (e.getBoundingClientRect().right > w + 0.5 || e.getBoundingClientRect().left < -0.5))
         .map((e) => (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 40) + '@' + Math.round(e.getBoundingClientRect().right));
-      const clipped = [...document.querySelectorAll('main *')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > w + 1 && !e.closest('[role=dialog]'); }).length;
+      const clipped = [...document.querySelectorAll('main *')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > w + 1 && !e.closest('[role=dialog], .sr-only'); }).length;
       return { docOverflow: de.scrollWidth > de.clientWidth + 1, outside, clipped }; })()`);
     check(`${label}: no horizontal overflow`, !m.docOverflow && m.clipped === 0, J(m));
     check(`${label}: every button, link and field is fully on screen`, m.outside.length === 0, J(m.outside));

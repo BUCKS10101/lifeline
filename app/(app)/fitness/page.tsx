@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Dumbbell, History, ListChecks, Play } from "lucide-react";
+import { Dumbbell, History, ListChecks, Play, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/fitness/empty-state";
 import { StatTile } from "@/components/fitness/stat-tile";
 import { LiveDot, RowList, SectionHeading, StatGrid } from "@/components/fitness/ui";
@@ -33,12 +33,13 @@ export default async function FitnessPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <header className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end md:justify-between">
         <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight md:text-3xl">Fitness</h1>
-        <nav aria-label="Fitness sections" className="flex gap-2">
+        <nav aria-label="Fitness sections" className="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
           <Link href="/fitness/workouts" className={navLink}><History className="size-[18px] text-muted-foreground" aria-hidden />History</Link>
           <Link href="/fitness/exercises" className={navLink}><Dumbbell className="size-[18px] text-muted-foreground" aria-hidden />Exercises</Link>
           <Link href="/fitness/templates" className={navLink}><ListChecks className="size-[18px] text-muted-foreground" aria-hidden />Templates</Link>
+          <Link href="/fitness/progress" className={navLink}><TrendingUp className="size-[18px] text-muted-foreground" aria-hidden />Progress</Link>
         </nav>
       </header>
 
@@ -96,7 +97,7 @@ export default async function FitnessPage() {
       <section aria-labelledby="recent-heading" className="flex flex-col gap-3">
         <SectionHeading
           id="recent-heading"
-          action={recentWorkouts.totalItems > 5 ? <Link href="/fitness/workouts" className="inline-flex min-h-6 items-center text-primary hover:underline">View all</Link> : undefined}
+          action={recentWorkouts.totalItems > 5 ? <Link href="/fitness/workouts" className="-my-2.5 inline-flex min-h-11 items-center text-primary hover:underline">View all</Link> : undefined}
         >
           Recent workouts
         </SectionHeading>

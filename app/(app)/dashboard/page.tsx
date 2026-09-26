@@ -1,5 +1,6 @@
-import { CalendarDays, Code, Flame, ListChecks, Scale, Target } from "lucide-react";
+import { CalendarDays, Code, Flame, ListChecks, Target } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
+import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
 import { requireUser } from "@/lib/backend";
@@ -54,12 +55,7 @@ export default async function DashboardPage() {
       <section aria-labelledby="progress-heading" className="flex flex-col gap-3">
         <h2 id="progress-heading" className="text-sm font-medium text-muted-foreground">Progress</h2>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <EmptyCard
-            icon={Scale}
-            title="Body weight"
-            description="Current weight, trend and progress toward your target."
-            module="Weight tracking"
-          />
+          <BodyWeightCard />
           <EmptyCard
             icon={Code}
             title="DSA progress"
