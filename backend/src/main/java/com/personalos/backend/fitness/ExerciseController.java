@@ -2,14 +2,18 @@ package com.personalos.backend.fitness;
 
 import com.personalos.backend.common.paging.PagedResponse;
 import com.personalos.backend.fitness.domain.MuscleGroup;
+import com.personalos.backend.fitness.dto.AnalyticsDtos.ExerciseProgression;
+import com.personalos.backend.fitness.dto.AnalyticsDtos.PersonalRecordEvent;
 import com.personalos.backend.fitness.dto.ExerciseDtos.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /** The user id comes from the session principal's {@code id} property; the fitness module never imports auth types. */
@@ -18,9 +22,11 @@ import java.util.UUID;
 public class ExerciseController {
 
     private final ExerciseService service;
+    private final FitnessAnalyticsService analytics;
 
-    public ExerciseController(ExerciseService service) {
+    public ExerciseController(ExerciseService service, FitnessAnalyticsService analytics) {
         this.service = service;
+        this.analytics = analytics;
     }
 
     @GetMapping
@@ -64,5 +70,21 @@ public class ExerciseController {
     @GetMapping("/{id}/records")
     public ExerciseRecords records(@AuthenticationPrincipal(expression = "id") UUID userId, @PathVariable UUID id) {
         return service.records(userId, id);
+    }
+
+    @GetMapping("/{id}/progression")
+    public ExerciseProgression progression(
+            @AuthenticationPrincipal(expression = "id") UUID userId, @PathVariable UUID id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return analytics.progression(userId, id, from, to);
+    }
+
+    @GetMapping("/{id}/personal-records")
+    public PagedResponse<PersonalRecordEvent> personalRecords(
+            @AuthenticationPrincipal(expression = "id") UUID userId, @PathVariable UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return analytics.exerciseRecords(userId, id, page, size);
     }
 }

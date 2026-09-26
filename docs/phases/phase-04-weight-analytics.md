@@ -157,7 +157,7 @@ Filled in when implementation starts.
 - [x] Checkpoint 0: browser-check tooling (PR #7)
 - [x] Checkpoint 1: schema and weight entries
 - [x] Checkpoint 2: weight analytics
-- [ ] Checkpoint 3: fitness analytics
+- [x] Checkpoint 3: fitness analytics
 - [ ] Checkpoint 4: chart foundation and `/weight`
 - [ ] Checkpoint 5: `/fitness/progress`, exercise charts, dashboard card
 - [ ] Checkpoint 6: verification
@@ -181,3 +181,15 @@ Filled in when implementation starts.
 - **Progress** (`TargetProgress`, pure): moving away from the target is 0%, passing it is 100% and `reached`, and MAINTAIN (target equals start) has a null percentage.
 - **Change windows** (7 and 30 days) are anchored to the latest entry's date, not to today: the baseline is the latest entry on or before `latest - N days`, and is null when there is none that old. **Week averages** use the ISO weeks containing today and the week before.
 - Tests: `TargetProgressTest` (6), `WeightAnalyticsApiTest` (20). Full backend suite: 405 passing.
+
+## Checkpoint 3 notes
+
+- Endpoints: `GET /api/v1/fitness/analytics/volume`, `GET /api/v1/fitness/personal-records`, `GET /api/v1/exercises/{id}/progression`, `GET /api/v1/exercises/{id}/personal-records`. All derived at read time from the existing tables, with no new tables, migrations or caching. Code is in `fitness` (`FitnessAnalyticsQueries`, `FitnessAnalyticsService`, `FitnessAnalyticsController`; the two exercise routes live in `ExerciseController`). The `analytics` package stays reserved for Phase 8.
+- **Training volume** = sum of `weight_kg x reps` over **working sets** (warm-ups excluded) of **COMPLETED** workouts, dated by the stored `performed_on`. In-progress workouts and other users are excluded. A completed workout with only warm-ups counts as a workout but adds no sets or volume.
+- **Movement groups**: no such classification existed, so `MovementGroup.of(MuscleGroup)` is the single mapping from the stored muscle group. PUSH = chest, shoulders, triceps; PULL = back, biceps, forearms; LEGS = quads, hamstrings, glutes, calves; CORE_FULL_BODY = core, full body. Every point lists all four groups, zero-filled. SQL groups by muscle group and Java maps them.
+- **Volume buckets** are ISO weeks (Monday start) or calendar months, zero-filled from the bucket containing `from` to the one containing `to`. `periodStart` of the first bucket can be before `from`; only workouts inside `[from, to]` are counted. `granularity` is `weekly` (default) or `monthly`, case-insensitive; anything else is `INVALID_GRANULARITY`. Defaults: the last 12 weeks or 12 months ending today in the user's timezone. Ranges over 1830 days are rejected.
+- **Progression** is one point per completed session that has at least one working set (no fabricated points), oldest first (date, then start time). `topSet` is the heaviest working set, ties broken by more reps. `bestEstimated1rmKg` is the best Epley estimate of the session (weight x (30 + reps) / 30, and just the weight for a single rep). `volumeKg` and `workingSets` exclude warm-ups. Default range is the last 365 days. An exercise the caller cannot see (someone else's, or unknown) is 404; built-ins are visible.
+- **Personal records** reuse `PersonalRecordCalculator`, so they always agree with the flags in workout detail (a test compares them). A set is a record only when strictly better than every earlier working set, and the first working set is a baseline. **Ties are never records.** One set can be several records: one event per set and type (`WEIGHT`, `ESTIMATED_1RM`, `REPS_AT_WEIGHT`).
+- **Ordering** is total, so pages never overlap: newest `performedOn`, then latest workout start, then highest set number, then exercise name and id, then type (`WEIGHT`, `ESTIMATED_1RM`, `REPS_AT_WEIGHT`). The exercise-specific endpoint is paginated (`page`, `size` 1..100); the global one takes `limit` (default 10, 1..50) and returns a prefix of the same ordering.
+- **Limitation**: PR events are derived in Java from one exercise's history (or all of the user's set history for the global endpoint), sorted and sliced in memory, because the single definition of a PR lives in the calculator. Volume and progression are aggregated in SQL. If the global endpoint becomes slow at large histories, Phase 9 caching is the planned answer.
+- Tests: `FitnessAnalyticsTest` (31). Full backend suite results are in the PR description.
