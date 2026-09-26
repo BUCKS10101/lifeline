@@ -183,8 +183,14 @@ export class Browser {
       if (d.method === "Runtime.consoleAPICalled" && d.params.type === "error") this.consoleErrors.push(d.params.args.map((a) => a.value ?? a.description).join(" "));
     });
   }
+  /** A DevTools call. It gives up after 30 seconds, so a stuck browser fails the check instead of hanging the whole run. */
   send(method, params = {}) {
-    return new Promise((res) => { const i = ++this.id; this.pending.set(i, res); this.ws.send(JSON.stringify({ id: i, method, params })); });
+    return new Promise((res, rej) => {
+      const i = ++this.id;
+      const timer = setTimeout(() => { this.pending.delete(i); rej(new Error(`DevTools call timed out after 30s: ${method}`)); }, 30000);
+      this.pending.set(i, (value) => { clearTimeout(timer); res(value); });
+      this.ws.send(JSON.stringify({ id: i, method, params }));
+    });
   }
   async eval(expr) {
     const r = await this.send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });

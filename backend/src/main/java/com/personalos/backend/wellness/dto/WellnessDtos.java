@@ -2,7 +2,10 @@ package com.personalos.backend.wellness.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import com.personalos.backend.wellness.sleep.dto.SleepDtos.SleepEntryResponse;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 
 public final class WellnessDtos {
 
@@ -26,4 +29,19 @@ public final class WellnessDtos {
             @Min(10) @Max(500) Integer proteinGoalG,
             @Min(240) @Max(960) Integer sleepGoalMinutes
     ) {}
+
+    // ---- Today ---------------------------------------------------------------------------------
+
+    /** Last night (the night ending today), or null when it has not been logged. Progress is against the optional sleep goal. */
+    public record SleepToday(SleepEntryResponse entry, Integer goalMinutes, Integer progressPercent, boolean goalReached) {}
+
+    public record WaterToday(int totalMl, Integer goalMl, Integer progressPercent, boolean goalReached, int entryCount) {}
+
+    public record ProteinToday(int totalG, Integer goalG, Integer progressPercent, boolean goalReached, int entryCount) {}
+
+    /**
+     * What the Today view needs. A metric the person has hidden is null. {@code date} is today in their timezone.
+     * Goals and progress are only the person's own numbers; nothing here is advice.
+     */
+    public record TodayResponse(LocalDate date, PreferencesResponse preferences, SleepToday sleep, WaterToday water, ProteinToday protein) {}
 }

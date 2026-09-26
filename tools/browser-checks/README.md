@@ -5,7 +5,7 @@ End-to-end verification that drives the real app in headless Chrome: it types an
 This is interim tooling for browser verification only. It is **not** the Playwright suite (planned for Phase 10) and it is not run in CI, because it needs the full stack, a browser and a local backend it can stop and start.
 
 ## What you need
-- Node.js 22 or newer (uses the built-in `fetch` and `WebSocket`); no `npm install` is required.
+- Node.js 22.18 or newer, 24 recommended (uses the built-in `fetch` and `WebSocket`; part 8 also imports a TypeScript file directly); no `npm install` is required.
 - Google Chrome, or Chromium (set `CHROME_PATH` if it is not in a standard location).
 - The stack running locally:
   - Postgres, Redis and Mailhog: `docker compose up -d postgres redis mailhog`
@@ -33,6 +33,7 @@ The runner first checks that the frontend, backend and Mailhog are reachable and
 | `05-long-names-and-picker` | Very long and unbroken names on ten screens, plus a rapid-add stress of the exercise picker |
 | `06-weight` | The `/weight` page: empty and single-entry states, logging and same-day replacement, every range against the API, the accessible chart table, tooltips by mouse and by touch, weekly and monthly tables, target set/clear, inline edit, two-tap delete, paging, long notes, the nav link, overflow at 390/768/1280 px, and the backend going away and coming back |
 | `07-progress` | `/fitness/progress` (stacked volume by movement group and workouts per week checked against numbers worked out from a back-dated seed, ranges, tooltips by mouse and touch, recent records), the exercise page's progression chart and paged record history, the hub's Progress link, the dashboard body-weight card, and overflow and touch targets at 390/768/1280 px |
+| `08-wellness` | `/wellness` Today view: one line and one button per metric, water and protein quick-adds with undo (and the undo expiring), the sheets (custom amounts, personal protein chips, validation), sleep logging with the live duration preview checked against the server (including 10 real daylight-saving and other-zone nights), goals and progress, hide and show, overflow and touch targets at 390/768/1280 px with each sheet open, the loading skeleton, and the backend going away and coming back |
 
 ## Notes
 - **Test data.** Each run registers fresh users (through Mailhog) and creates workouts in your local development database. Nothing is cleaned up. Do not point this at anything but a local dev stack.

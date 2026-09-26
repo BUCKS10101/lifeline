@@ -299,8 +299,8 @@ The backend is naturally two pieces: sleep is the hard one (time resolution), an
 ## Checklists
 
 - [x] Checkpoint 1: schema, preferences and sleep
-- [ ] Checkpoint 2: water, protein and Today
-- [ ] Checkpoint 3: Today view
+- [x] Checkpoint 2: water, protein and Today
+- [x] Checkpoint 3: Today view
 - [ ] Checkpoint 4: metric pages, dashboard and verification
 
 ## Checkpoint 1 notes
@@ -311,3 +311,22 @@ The backend is naturally two pieces: sleep is the hard one (time resolution), an
 - **Time resolution** is the plan's rule, in one pure class. Behaviours worth knowing: equal times have their own message; a clock time skipped by the clocks going forward is read as the moment the clocks jump to; a wake time that happens twice means the first occurrence, and a bedtime that happens twice means the latest before waking. Each night stores the zone it was logged in, so history does not move if the profile timezone changes later (tested).
 - **Series:** default the last 30 days ending today (the person's timezone), at most 366 days; `previousAverage` covers the equally long period just before `from`; each average is null when its period has no nights and is rounded half up to whole minutes.
 - **Tests:** `SleepTimesTest` (18), `WellnessSchemaTest` (27), `SleepApiTest` (34), `WellnessPreferencesApiTest` (15), `SleepConcurrencyTest` (2). Full backend suite 533 passing. Mutation-checked: dropping the previous-day rule, changing the 20-hour limit, ignoring the profile timezone, dropping the user filter on delete and on the series, and widening the previous period are each caught.
+
+## Checkpoint 2 notes
+
+- **Endpoints:** `POST`/`GET`/`DELETE /api/v1/water-entries`, `POST`/`GET`/`DELETE /api/v1/protein-entries`, `GET /api/v1/protein/suggestions`, `GET /api/v1/wellness/today`. `GET` on the entries returns one day (`?date=`, default today) with the total, the optional goal, `progressPercent`, `goalReached` and the entries newest first.
+- **Deviation from the plan's endpoint list:** the two chart endpoints, `GET /water/series` and `GET /protein/series` (endpoints 11 and 15), were **not** built here. The plan put them in checkpoint 2, but they exist only to feed the metric pages' charts, so they move to checkpoint 4 with the pages that use them.
+- **Idempotent adds:** the client-generated `id` is the primary key and the insert is `ON CONFLICT (id) DO NOTHING`. A repeat returns the existing entry with **200** (the first request won, even if the retry differs); a new entry is **201**; an id that belongs to someone else is **409 `CONFLICT`** and touches nothing (the same rule as fitness sets). Parallel retries create exactly one row.
+- **Goals:** `progressPercent` is a whole number that stops at 100 and `goalReached` is simply "at or above the goal" (`GoalProgress`, pure). With no goal both are null and false. Nothing is a verdict on the amount.
+- **Protein labels:** trimmed, blank means none, at most 60 characters, case as typed. **Suggestions** are the person's own labels only, grouped case-insensitively, most used first (ties: most recent, then name), shown as last typed with the grams of the last use, at most 6, from the most recent 1,000 labelled entries.
+- **Today:** `date` is the person's local date; sleep is the night that ended today (a night from yesterday is not shown); water and protein are today's totals only; a hidden metric is `null` while its data is kept; sleep also gets goal progress. It is three small indexed lookups in one read-only transaction.
+- **Tests:** 70 new (`GoalProgressTest` 9, `WaterApiTest` 25, `ProteinApiTest` 22, `TodayApiTest` 10, `IntakeConcurrencyTest` 4), backend suite 603 passing; 11 mutation checks each caught (date filter, owner filter on delete, the retry overwriting, the foreign-id guard, suggestion ordering, suggestion ownership, case-insensitivity, label trimming, hidden metrics, the day sleep looks at, the progress clamp).
+
+## Checkpoint 3 notes
+
+- **`/wellness`:** one hairline-ruled list, one line per visible metric (`Sleep 7 h 42 min [Edit]`, `Water 1.25 L [+250] [...]`, `Protein 82 g [+20] [...]`), a thin progress line only when a goal is set, and a quiet Customize button. No charts, history, cards or links (the lines become links in checkpoint 4). Wellness is a live nav item after Weight; the other "Soon" items are unchanged.
+- **Logging:** `+250` and `+20` add straight away and `Undo` appears on that line for 8 seconds, then goes away by itself. A retry after a failed request reuses the same client id. The sleep sheet has two time fields and a live duration; `lib/sleep-preview.ts` is the client's copy of the server's rule (including daylight-saving changes, repeated and skipped hours), and the browser check compares it with the server on 10 real nights across zones. Saving replaces last night (one per morning).
+- **Deviation from the plan (needs your eye):** the plan puts custom amounts, labels and frequent chips on the metric pages (checkpoint 4). Those pages do not exist yet and this checkpoint's brief asks for custom amounts, labels and chips, so each of water and protein has a small quiet "more" (`...`) button on its line that opens a compact sheet: water has `+500` and a custom amount (`+250` is the button on the line, so it is not repeated); protein has your own past labels as one-tap chips and grams plus an optional label. It is the only second control on a line. In checkpoint 4 these controls can move to the metric pages or stay.
+- **Customize sheet:** three switches (all on by default), three optional goal fields with no suggested values (sleep is typed in hours and stored as minutes). Hiding a metric removes its line and keeps its data; hiding all three shows a short message and Customize.
+- **States:** empty ("Not logged", 0 ml, 0 g), route loading skeleton, the shared unavailable panel with Try again, and inline errors on a failed add (no Undo, value unchanged).
+- **Browser checks:** new part `08-wellness` (96 checks). Part 8 imports `lib/sleep-preview.ts` directly, so it needs Node 22.18 or newer (24 recommended); time fields are set through the native value setter because headless Chrome cannot use the time picker. Two mutations (a broken preview, and the water switch wired to the wrong state) were each caught.
