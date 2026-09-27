@@ -42,13 +42,13 @@ try {
   }
   await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-tasks-card]')`, "tasks card");
   check("the dashboard card with no tasks says so", await b.has(`document.querySelector('[data-nothing-due]')?.innerText.includes('Nothing due today. No open tasks.')`));
-  check("the placeholder 'Soon' card is gone and the other dashboard placeholders are untouched", !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Tasks due') && c.innerText.includes('Soon'))`)) && (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Goals", "Upcoming events", "DSA progress", "Habits today"].sort().join());
+  check("the placeholder 'Soon' card is gone and the other dashboard placeholders are untouched", !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Tasks due') && c.innerText.includes('Soon'))`)) && (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Goals", "Upcoming events", "DSA progress"].sort().join());
 
   // ------------------------------------------------------------------------------------------------
   begin("Navigation");
   await b.viewport(1280, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('a[href="/tasks"]')`, "nav");
   check("Tasks is a live link in the sidebar", true);
-  check("Habits, Goals, Calendar and DSA are still not links", !(await b.has(`document.querySelector('a[href="/habits"], a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
+  check("Habits, Goals, Calendar and DSA are still not links", !(await b.has(`document.querySelector('a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/tasks"]')`, "sidebar Tasks"); await b.waitFor(`location.pathname === '/tasks'`, "tasks page");
   check("the Tasks link is marked current on /tasks and the page title is set", await b.has(`document.querySelector('a[href="/tasks"]').getAttribute('aria-current') === 'page'`) && (await b.eval("document.title")).includes("Tasks"));
   await b.waitFor(`document.querySelector('nav[aria-label="Task views"]')`, "view links");
