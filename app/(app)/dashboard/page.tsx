@@ -1,8 +1,9 @@
-import { CalendarDays, Code, Flame, ListChecks, Target } from "lucide-react";
+import { CalendarDays, Code, Flame, Target } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
+import { TasksDueCard } from "@/components/dashboard/tasks-due-card";
 import { WellnessTodayCard } from "@/components/dashboard/wellness-card";
 import { requireUser } from "@/lib/backend";
 import { formatToday, greeting } from "@/lib/timezones";
@@ -29,12 +30,7 @@ export default async function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <TodaysWorkoutCard timezone={user.timezone} />
           <WellnessTodayCard />
-          <EmptyCard
-            icon={ListChecks}
-            title="Tasks due"
-            description="Tasks and deadlines that need attention today."
-            module="Tasks"
-          />
+          <TasksDueCard />
           <EmptyCard
             icon={Flame}
             title="Habits today"

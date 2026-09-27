@@ -43,7 +43,7 @@ try {
   check("each line is one link to its metric page (the pages exist as of Checkpoint 4), and the button is not a link", J(await b.eval(`[...document.querySelectorAll('[data-metric]')].map((l) => [l.dataset.metric, l.querySelectorAll('a').length, l.querySelector('a')?.getAttribute('href')])`)) === J([["sleep", 1, "/wellness/sleep"], ["water", 1, "/wellness/water"], ["protein", 1, "/wellness/protein"]]));
   await b.viewport(1280, 900); await b.goto("/wellness"); await b.waitFor(line("water"), "lines");
   check("Wellness is a live nav link in the sidebar and is marked as the current page", await b.has(`document.querySelector('a[href="/wellness"]')?.getAttribute('aria-current') === 'page'`));
-  check("the other 'Soon' items are still not links", !(await b.has(`document.querySelector('a[href="/tasks"], a[href="/habits"], a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
+  check("the other 'Soon' items are still not links", !(await b.has(`document.querySelector('a[href="/habits"], a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
   await b.viewport(390);
   check("the page title is set", (await b.eval("document.title")).includes("Wellness"));
   const today0 = await todayApi();
