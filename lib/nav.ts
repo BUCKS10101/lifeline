@@ -25,7 +25,7 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Fitness", icon: Dumbbell, href: "/fitness" },
   { label: "Weight", icon: Scale, href: "/weight" },
   { label: "Wellness", icon: HeartPulse, href: "/wellness" },
-  { label: "Tasks", icon: ListChecks },
+  { label: "Tasks", icon: ListChecks, href: "/tasks" },
   { label: "Habits", icon: Flame },
   { label: "Goals", icon: Target },
   { label: "Calendar", icon: CalendarDays },

@@ -307,7 +307,7 @@ Five small vertical slices; each is independently reviewed, tested and merged. E
 ## Checklists
 
 - [x] Checkpoint 1: schema and Tasks API
-- [ ] Checkpoint 2: Tasks UI and the Tasks-due card
+- [x] Checkpoint 2: Tasks UI and the Tasks-due card
 - [ ] Checkpoint 3: Habits backend
 - [ ] Checkpoint 4: Habits UI and the Habits-today card
 - [ ] Checkpoint 5: Goals, links and closeout
@@ -321,3 +321,15 @@ Five small vertical slices; each is independently reviewed, tested and merged. E
 - **Partial edit:** `PATCH` reads the body as a JSON object so it can tell a field left out (unchanged) from an explicit `null` (clears notes, date or goal). Binding to a record with `Optional` fields cannot tell the two apart (Jackson gives `Optional.empty()` for both), which the first version of the tests exposed. The title and priority cannot be cleared; an empty body is `EMPTY_UPDATE`.
 - **Ownership:** every statement filters by the owner's id; a task or goal that is not yours is `404` (a foreign `goalId` on create or edit is 404, and as a list filter it simply finds nothing).
 - **Tests:** `TasksGoalsHabitsSchemaTest` (21: every constraint of all four tables, the partial unique habit name, the primary key, `SET NULL` on goal delete, cascades), `TaskApiTest` (33) and `TaskConcurrencyTest` (5). Backend suite 672 passing. Ten mutations (today view boundary, due-today counted as overdue, completing again moving the moment, delete without the owner filter, upcoming including today, reversed priority order, a foreign goal being linkable, ignoring the timezone, done oldest-first, summary overdue including today, someone else's client id) are each caught, and a harmless control mutation correctly is not.
+
+## Checkpoint 2 notes
+
+- **Scope:** the Tasks page, the live Tasks nav item, the read-only Tasks-due dashboard card and browser part 10. No backend change, no habits or goals, and Habits and Goals stay "Soon".
+- **`/tasks`:** the four views as links (`?view=today|upcoming|anytime|done`, Today by default, an unknown value falls back to Today), a one-line "Add a task" field (type and press Enter), and a hairline list. Each row has a round check (a 44 px target, `role="checkbox"`), the title (a button that opens the edit sheet) and quietly a due label ("Overdue · date", "Today" or a short date), a "High" mark only for high priority, and the goal name only if linked. Done is paged (20 a page) and each row's check reopens it. Which tasks belong to a view and which are overdue is entirely the backend's: the page shows the API's order and its `overdue` flag and computes nothing.
+- **Undo:** completing, reopening and adding each show a short note ("Completed ... Undo") for 8 seconds, then it goes away by itself. Undo of an add deletes the task; undo of a completion reopens it and the reverse. (The same hook the wellness pages use.)
+- **Edit sheet:** title, notes, due date (with a "No date" button) and priority. It sends only what changed, and clearing the date or the notes sends an explicit `null`, so a field left alone is never touched. It shows the server's messages (a title over 200 characters, a date before 2000). Delete is a two-tap confirmation. **There is no goal field**: goals do not exist yet, so the plan's goal picker arrives with checkpoint 5 (the row already shows a goal name if a task has one).
+- **Adding:** a new task has no date and normal priority (the plan's decision 4), so from Today it lands in Anytime; the note says so ("Added ... to Anytime"). A retry after a failed request reuses the same client id. See the decision below.
+- **Dashboard:** the "Tasks due" placeholder card is real and read-only: "N due today, M overdue" from the summary API and the first three Today titles, "Nothing due today" (with the open count) when nothing is due, and a "View tasks" link. No adding or completing there.
+- **States:** empty state per view, route loading skeleton, the shared unavailable panel with Try again, and an inline error (with what was typed kept) on a failed add.
+- **Bugs found by the browser checks and fixed:** a very long unbroken task title made the dashboard card's content wider than the card (clipped, but overflowing), fixed with `min-w-0` and truncation on the card.
+- **Tests:** browser part 10 (71 checks). Two earlier expectations changed because this checkpoint makes Tasks a link: parts 6 and 8 asserted that `/tasks` was not a link. Part 10 uses a real Enter key press and waits for React to attach to the form before typing (a form submitted before hydration is a plain browser submit that reloads the page, which the first run of the checks showed). Two UI mutations are each caught (the "No date" button not sending an explicit null, and the dashboard card dropping the overdue count).

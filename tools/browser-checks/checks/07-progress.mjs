@@ -210,7 +210,7 @@ try {
   check("View weight opens /weight", true);
   await b.goto("/dashboard"); await b.waitFor(hasText("Body weight"), "dashboard");
   const soon = await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`);
-  check("the other dashboard cards are still 'Soon'", J(soon.sort()) === J(["Goals", "Upcoming events", "DSA progress", "Habits today", "Tasks due"].sort()), J(soon));
+  check("the other dashboard cards are still 'Soon' (Tasks due is real as of Phase 6 checkpoint 2)", J(soon.sort()) === J(["Goals", "Upcoming events", "DSA progress", "Habits today"].sort()), J(soon));
 
   // ------------------------------------------------------------------------------------------------
   begin("No horizontal overflow and touch targets at 390, 768 and 1280 px");
