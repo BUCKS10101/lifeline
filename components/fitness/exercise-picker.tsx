@@ -67,7 +67,7 @@ export function ExercisePicker({ trigger, children, onSelect, excludeIds = [] }:
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger render={trigger}>{children}</SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[85vh] gap-0 p-0 sm:mx-auto sm:max-w-lg">
+      <SheetContent side="bottom" className="max-h-[85dvh] gap-0 p-0 sm:mx-auto sm:max-w-lg">
         <SheetHeader className="gap-1 border-b p-4">
           <SheetTitle>Choose an exercise</SheetTitle>
           <SheetDescription className="sr-only">Search the exercise catalogue and pick one to add</SheetDescription>

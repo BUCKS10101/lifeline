@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = session.status === "ok" ? session.user : null;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-dvh">
       <Sidebar user={user} />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar user={user} dateLabel={user ? formatToday(user.timezone) : null} />
