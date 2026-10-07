@@ -4,18 +4,20 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { errorMessage, Field, fieldErrors, Notice, SubmitButton } from "@/components/auth/ui";
 import { ConfirmButton } from "@/components/fitness/confirm-button";
+import { GoalPicker } from "@/components/goals/goal-picker";
 import { WeekdayToggles } from "@/components/habits/weekday-toggles";
 import { Button } from "@/components/ui/button";
 import { apiDelete, apiPatch, apiPost } from "@/lib/client-api";
 import type { Habit } from "@/lib/habit-types";
 import { sameDays } from "@/lib/weekdays";
 
-/** Edit, archive/restore or permanently delete a habit. Only the fields the API supports; there is no goal field yet. */
+/** Edit, archive/restore or permanently delete a habit, including the supporting goal it links to (if any). */
 export function HabitManage({ habit, today }: { habit: Habit; today: string }) {
   const router = useRouter();
   const [name, setName] = useState(habit.name);
   const [days, setDays] = useState<number[]>(habit.daysOfWeek);
   const [startedOn, setStartedOn] = useState(habit.startedOn);
+  const [goalId, setGoalId] = useState(habit.goal?.id ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -35,6 +37,7 @@ export function HabitManage({ habit, today }: { habit: Habit; today: string }) {
     if (trimmed !== habit.name) patch.name = trimmed;
     if (!sameDays(days, habit.daysOfWeek)) patch.daysOfWeek = days;
     if (startedOn !== habit.startedOn) patch.startedOn = startedOn;
+    if (goalId !== (habit.goal?.id ?? "")) patch.goalId = goalId === "" ? null : goalId;
     setSaved(false);
     if (Object.keys(patch).length === 0) return;
 
@@ -88,6 +91,7 @@ export function HabitManage({ habit, today }: { habit: Habit; today: string }) {
         {errors.daysOfWeek && <p className="text-sm text-destructive">{errors.daysOfWeek}</p>}
         <Field label="Started on" type="date" name="startedOn" value={startedOn} min="2000-01-01" max={today} error={errors.startedOn}
           onChange={(e) => { setStartedOn(e.target.value); setSaved(false); }} />
+        <GoalPicker value={goalId} onChange={(v) => { setGoalId(v); setSaved(false); }} error={errors.goalId} currentGoal={habit.goal} />
         <SubmitButton pending={saving}>Save changes</SubmitButton>
       </form>
 

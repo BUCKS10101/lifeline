@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { errorMessage, Field, fieldErrors, Notice, SubmitButton, TextareaField } from "@/components/auth/ui";
 import { ConfirmButton } from "@/components/fitness/confirm-button";
+import { GoalPicker } from "@/components/goals/goal-picker";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { apiDelete, apiPatch } from "@/lib/client-api";
@@ -16,9 +17,9 @@ const PRIORITIES: { value: TaskPriority; label: string }[] = [
 ];
 
 /**
- * Edits the fields the tasks API supports: title, notes, due date and priority. A partial edit sends only what changed, and
- * clearing the date or the notes sends an explicit null, so a field left alone is never touched. (There is no goal field yet:
- * goals arrive with their own checkpoint.)
+ * Edits the fields the tasks API supports: title, notes, due date, priority and a supporting goal. A partial edit
+ * sends only what changed, and clearing the date, the notes or the goal sends an explicit null, so a field left alone
+ * is never touched.
  */
 export function TaskEditSheet({ task, onClose, onChanged }: { task: TaskItem | null; onClose: () => void; onChanged: () => void }) {
   return (
@@ -36,6 +37,7 @@ function EditForm({ task, onClose, onChanged }: { task: TaskItem; onClose: () =>
   const [notes, setNotes] = useState(task.notes ?? "");
   const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
+  const [goalId, setGoalId] = useState(task.goal?.id ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -54,6 +56,7 @@ function EditForm({ task, onClose, onChanged }: { task: TaskItem; onClose: () =>
     const nextDue = dueDate === "" ? null : dueDate;
     if (nextDue !== task.dueDate) patch.dueDate = nextDue;
     if (priority !== task.priority) patch.priority = priority;
+    if (goalId !== (task.goal?.id ?? "")) patch.goalId = goalId === "" ? null : goalId;
     if (Object.keys(patch).length === 0) {
       onClose();
       return;
@@ -120,6 +123,7 @@ function EditForm({ task, onClose, onChanged }: { task: TaskItem; onClose: () =>
             ))}
           </div>
         </fieldset>
+        <GoalPicker value={goalId} onChange={setGoalId} error={errors.goalId} currentGoal={task.goal} />
         {error && <Notice kind="error">{error}</Notice>}
         <SubmitButton pending={pending}>Save</SubmitButton>
         <div className="flex justify-center">

@@ -42,13 +42,13 @@ try {
   }
   await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-tasks-card]')`, "tasks card");
   check("the dashboard card with no tasks says so", await b.has(`document.querySelector('[data-nothing-due]')?.innerText.includes('Nothing due today. No open tasks.')`));
-  check("the placeholder 'Soon' card is gone and the other dashboard placeholders are untouched", !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Tasks due') && c.innerText.includes('Soon'))`)) && (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Goals", "Upcoming events", "DSA progress"].sort().join());
+  check("the placeholder 'Soon' card is gone and the other dashboard placeholders are untouched", !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Tasks due') && c.innerText.includes('Soon'))`)) && (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Upcoming events", "DSA progress"].sort().join());
 
   // ------------------------------------------------------------------------------------------------
   begin("Navigation");
   await b.viewport(1280, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('a[href="/tasks"]')`, "nav");
   check("Tasks is a live link in the sidebar", true);
-  check("Habits, Goals, Calendar and DSA are still not links", !(await b.has(`document.querySelector('a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
+  check("Calendar and DSA are still not links (Goals is real as of Phase 6 checkpoint 5)", !(await b.has(`document.querySelector('a[href="/calendar"], a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/tasks"]')`, "sidebar Tasks"); await b.waitFor(`location.pathname === '/tasks'`, "tasks page");
   check("the Tasks link is marked current on /tasks and the page title is set", await b.has(`document.querySelector('a[href="/tasks"]').getAttribute('aria-current') === 'page'`) && (await b.eval("document.title")).includes("Tasks"));
   await b.waitFor(`document.querySelector('nav[aria-label="Task views"]')`, "view links");
@@ -129,7 +129,7 @@ try {
   await openView("upcoming");
   await b.click(editOf("Next week"), "edit Next week"); await b.waitFor(sheet, "sheet"); await sleep(300);
   const target = (await apiView("upcoming")).items.find((t) => t.title === "Next week");
-  check("the sheet has title, notes, due date and priority (no goal field yet)", J(await b.eval(`[...${sheet}.querySelectorAll('[name]')].map((e) => e.name)`)) === J(["title", "notes", "dueDate"]) && await b.has(`${sheet}.querySelector('[role=radiogroup]')`) && !(await b.has(`${sheet}.innerText.toLowerCase().includes('goal')`)));
+  check("the sheet has title, notes, due date, priority and a goal picker (defaulting to No goal)", J(await b.eval(`[...${sheet}.querySelectorAll('[name]')].map((e) => e.name)`)) === J(["title", "notes", "dueDate", "goalId"]) && await b.has(`${sheet}.querySelector('[role=radiogroup]')`) && (await b.eval(`${sheet}.querySelector('select[name=goalId]').value`)) === "");
   check("it is pre-filled with the task's own values", (await b.eval(`${field("title")}.value`)) === "Next week" && (await b.eval(`${field("dueDate")}.value`)) === target.dueDate && await b.has(`${sheet}.querySelector('[role=radio][aria-checked=true]').textContent.trim() === 'Normal'`));
   await b.shot("tasks-edit-sheet-390");
   await setValue(field("title"), "Next week (renamed)"); await b.clickText("button", "Save");
