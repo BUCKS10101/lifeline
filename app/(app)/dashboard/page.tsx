@@ -1,7 +1,8 @@
-import { CalendarDays, Code, Target } from "lucide-react";
+import { CalendarDays, Code } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
+import { GoalsCard } from "@/components/dashboard/goals-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
 import { HabitsTodayCard } from "@/components/dashboard/habits-today-card";
 import { TasksDueCard } from "@/components/dashboard/tasks-due-card";
@@ -56,12 +57,7 @@ export default async function DashboardPage() {
             description="Problems solved and recent activity."
             module="DSA"
           />
-          <EmptyCard
-            icon={Target}
-            title="Goals"
-            description="How far along each of your goals is."
-            module="Goals"
-          />
+          <GoalsCard />
         </div>
       </section>
     </div>

@@ -29,7 +29,7 @@ try {
   begin("1-3. Navigation, empty /habits, and empty dashboard card (a brand-new user, 390px)");
   await b.viewport(1280, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('a[href="/habits"]')`, "nav");
   check("Habits is a live link in the sidebar", true);
-  check("Goals, Calendar and DSA are still not links", !(await b.has(`document.querySelector('a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
+  check("Calendar and DSA are still not links (Goals is real as of Phase 6 checkpoint 5)", !(await b.has(`document.querySelector('a[href="/calendar"], a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/habits"]')`, "sidebar Habits"); await b.waitFor(`location.pathname === '/habits'`, "habits page");
   check("the Habits link is marked current and the page title is set", await b.has(`document.querySelector('a[href="/habits"]').getAttribute('aria-current') === 'page'`) && (await b.eval("document.title")).includes("Habits"));
   await b.viewport(390);
@@ -40,7 +40,7 @@ try {
   await b.shot("habits-empty-390");
   await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-habits-card]')`, "habits card");
   check("the dashboard card with nothing scheduled says so, and the placeholder 'Soon' badge is gone", await b.has(`document.querySelector('[data-nothing-scheduled]')?.innerText.includes('Nothing scheduled today')`) && !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Habits today') && c.innerText.includes('Soon'))`)));
-  check("the other dashboard placeholders are untouched", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Goals", "Upcoming events", "DSA progress"].sort().join());
+  check("the other dashboard placeholders are untouched", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Upcoming events", "DSA progress"].sort().join());
 
   // ------------------------------------------------------------------------------------------------
   // Seed: a daily habit started 60 days ago with a real mix of done/missed days, a weekday-only habit, and a
@@ -48,8 +48,13 @@ try {
   const start = addDays(today, -60);
   await api.post("/api/v1/habits", { name: "Read", daysOfWeek: [1, 2, 3, 4, 5, 6, 7], startedOn: start });
   await api.post("/api/v1/habits", { name: "Gym", daysOfWeek: [1, 3, 5], startedOn: start });
+  // Meditate: daily, never ticked. Scheduled every day including today, so today's cell is deterministically
+  // "open" (scheduled, not done, and it is today) on every real calendar day, independent of which weekday the
+  // suite happens to run on or whether Read or Gym happen to already be done for today.
+  await api.post("/api/v1/habits", { name: "Meditate", daysOfWeek: [1, 2, 3, 4, 5, 6, 7], startedOn: start });
   const read = (await apiList()).find((h) => h.name === "Read").id;
   const gym = (await apiList()).find((h) => h.name === "Gym").id;
+  const meditate = (await apiList()).find((h) => h.name === "Meditate").id;
   // Read: done on a real, checkable run of the last 6 days (0-5), missed on 6, done again 7-8. Streak should be 6.
   for (const n of [0, 1, 2, 3, 4, 5, 7, 8]) await api.put(`/api/v1/habits/${read}/completions/${addDays(today, -n)}`, {});
   // Gym: done on every one of its own scheduled days for the last 3 weeks (a real streak the test can check independently).
@@ -67,7 +72,8 @@ try {
   check("Read (scheduled today) shows its name and the API's current streak", readRow.includes("Read") && readRow.includes(`${readApi.currentStreak} day`), J({ readRow, streak: readApi.currentStreak }));
   check("Read has a tick control, checked to match doneToday", (await b.eval(`${rowByName("Read")}.querySelector('[role=checkbox]').getAttribute('aria-checked')`)) === String(readApi.doneToday));
   if (todayIsGymDay) {
-    check("Gym (scheduled today) is in the Today section with a tick control", (await rowsInSection("today-heading").then((r) => b.eval(r))) ? true : true);
+    const todayRows = await b.eval(rowsInSection("today-heading"));
+    check("Gym (scheduled today) is in the Today section with a tick control", todayRows.some((r) => r.startsWith("Gym")), J(todayRows));
     check("Gym has a tick control", await b.has(`${rowByName("Gym")}.querySelector('[role=checkbox]')`));
   } else {
     check("Gym (not scheduled today) has no tick control, only a plain marker, but still shows its streak", !(await b.has(`${rowByName("Gym")}.querySelector('[role=checkbox]')`)) && (await b.eval(`${rowByName("Gym")}.innerText.replace(/\\s+/g, ' ').trim()`)).includes(`${gymApi.currentStreak} day`));
@@ -105,12 +111,17 @@ try {
   const expectedStates = history.points.map((p) => (p.date < readNow.startedOn ? "before" : p.done && p.scheduled ? "done" : p.done ? "logged" : p.date === today ? "open" : p.scheduled ? "missed" : "unscheduled"));
   check("every cell's visual state matches scheduled/done/date exactly as the API reported it", J(cells.map((c) => c.state)) === J(expectedStates), J({ got: cells.map((c) => c.state).slice(-10), want: expectedStates.slice(-10) }));
   // "Read" is daily (every day scheduled, no gap before its start within this window), so on its own it can never show
-  // "unscheduled"; Gym (Mon/Wed/Fri) is where the unscheduled days are. Check the union across both real habits.
+  // "unscheduled"; Gym (Mon/Wed/Fri) is where the unscheduled days are. "Meditate" is never ticked, so today's cell
+  // is deterministically "open" regardless of the real weekday or whether Read or Gym happen to already be done for
+  // today. Check the union across all three real habits.
   const gymHistory = (await api.get(`/api/v1/habits/${gym}/history`)).body;
   const gymNow = await apiOne(gym);
   const gymExpected = gymHistory.points.map((p) => (p.date < gymNow.startedOn ? "before" : p.done && p.scheduled ? "done" : p.done ? "logged" : p.date === today ? "open" : p.scheduled ? "missed" : "unscheduled"));
-  const allStates = new Set([...expectedStates, ...gymExpected]);
-  check("all four required states (done, missed, unscheduled, today) appear somewhere across the seeded habits' real history", ["done", "missed", "unscheduled"].every((s) => allStates.has(s)) && (allStates.has("open") || todayIsGymDay === false || readNow.doneToday === false), J([...allStates]));
+  const meditateHistory = (await api.get(`/api/v1/habits/${meditate}/history`)).body;
+  const meditateNow = await apiOne(meditate);
+  const meditateExpected = meditateHistory.points.map((p) => (p.date < meditateNow.startedOn ? "before" : p.done && p.scheduled ? "done" : p.done ? "logged" : p.date === today ? "open" : p.scheduled ? "missed" : "unscheduled"));
+  const allStates = new Set([...expectedStates, ...gymExpected, ...meditateExpected]);
+  check("all four required states (done, missed, unscheduled, today) appear somewhere across the seeded habits' real history", ["done", "missed", "unscheduled", "open"].every((s) => allStates.has(s)), J([...allStates]));
   const box = await b.eval(`(() => { const r = document.querySelector('[data-history-grid]').getBoundingClientRect(); return { l: r.left, r: r.right, w: innerWidth }; })()`);
   check("the grid fits inside the viewport", box.l >= 0 && box.r <= box.w + 1, J(box));
   await b.shot("habit-detail-1280");

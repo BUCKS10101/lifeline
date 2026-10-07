@@ -218,7 +218,7 @@ try {
   begin("Navigation");
   await b.viewport(1280, 900); await b.goto("/dashboard");
   check("Weight is a live link in the sidebar", await b.has(`document.querySelector('a[href="/weight"]')`));
-  check("the other 'Soon' items are still not links", !(await b.has(`document.querySelector('a[href="/goals"], a[href="/calendar"], a[href="/dsa"]')`)));
+  check("the other 'Soon' items are still not links (Goals is real as of Phase 6 checkpoint 5)", !(await b.has(`document.querySelector('a[href="/calendar"], a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/weight"]')`, "sidebar Weight");
   await b.waitFor(`location.pathname === '/weight'`, "weight page");
   check("the Weight link is marked current on /weight", await b.has(`document.querySelector('a[href="/weight"]').getAttribute('aria-current') === 'page'`));
