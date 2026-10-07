@@ -1,14 +1,18 @@
-import { CalendarDays, Code } from "lucide-react";
+import { Code } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
 import { GoalsCard } from "@/components/dashboard/goals-card";
+import { PersonalCareCard } from "@/components/dashboard/personal-care-card";
+import { TodaysScheduleCard } from "@/components/dashboard/todays-schedule-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
 import { HabitsTodayCard } from "@/components/dashboard/habits-today-card";
 import { TasksDueCard } from "@/components/dashboard/tasks-due-card";
+import { UpcomingRemindersCard } from "@/components/dashboard/upcoming-reminders-card";
 import { WellnessTodayCard } from "@/components/dashboard/wellness-card";
 import { requireUser } from "@/lib/backend";
 import { formatToday, greeting } from "@/lib/timezones";
+import { todayIn } from "@/lib/format";
 
 export const metadata = { title: "Dashboard | Personal OS" };
 
@@ -34,17 +38,15 @@ export default async function DashboardPage() {
           <WellnessTodayCard />
           <TasksDueCard />
           <HabitsTodayCard />
+          <TodaysScheduleCard timezone={user.timezone} />
         </div>
       </section>
 
       <section aria-labelledby="upcoming-heading" className="flex flex-col gap-3">
         <h2 id="upcoming-heading" className="text-sm font-medium text-muted-foreground">Coming up</h2>
-        <EmptyCard
-          icon={CalendarDays}
-          title="Upcoming events"
-          description="Events, deadlines and study sessions for the next few days."
-          module="Calendar"
-        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <UpcomingRemindersCard />
+        </div>
       </section>
 
       <section aria-labelledby="progress-heading" className="flex flex-col gap-3">
@@ -58,6 +60,7 @@ export default async function DashboardPage() {
             module="DSA"
           />
           <GoalsCard />
+          <PersonalCareCard today={todayIn(user.timezone)} />
         </div>
       </section>
     </div>

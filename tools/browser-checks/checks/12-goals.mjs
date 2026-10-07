@@ -32,10 +32,10 @@ try {
   await b.shot("goals-empty-390");
   await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-goals-card]')`, "goals card");
   check("the dashboard card with no goals says so, and the placeholder 'Soon' badge is gone", await b.has(`document.querySelector('[data-no-goals]')?.innerText.includes('No goals yet')`) && !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Goals') && c.innerText.includes('Soon'))`)));
-  check("the only remaining dashboard placeholders are Upcoming events and DSA progress", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Upcoming events", "DSA progress"].sort().join());
+  check("the only remaining dashboard placeholder is DSA progress", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["DSA progress"].sort().join());
   await b.viewport(1280, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('a[href="/goals"]')`, "nav");
   check("Goals is a live link in the sidebar", true);
-  check("Calendar and DSA are still not links", !(await b.has(`document.querySelector('a[href="/calendar"], a[href="/dsa"]')`)));
+  check("DSA is still not a link (Calendar, Reminders and Personal Care are real as of Phase 7)", !(await b.has(`document.querySelector('a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/goals"]')`, "sidebar Goals"); await b.waitFor(`location.pathname === '/goals'`, "goals page");
   check("the Goals link is marked current and the page title is set", await b.has(`document.querySelector('a[href="/goals"]').getAttribute('aria-current') === 'page'`) && (await b.eval("document.title")).includes("Goals"));
 

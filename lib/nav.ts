@@ -1,4 +1,5 @@
 import {
+  Bell,
   CalendarDays,
   Code,
   Dumbbell,
@@ -8,6 +9,7 @@ import {
   ListChecks,
   Scale,
   Settings,
+  ShowerHead,
   Target,
   type LucideIcon,
 } from "lucide-react";
@@ -28,7 +30,9 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Tasks", icon: ListChecks, href: "/tasks" },
   { label: "Habits", icon: Flame, href: "/habits" },
   { label: "Goals", icon: Target, href: "/goals" },
-  { label: "Calendar", icon: CalendarDays },
+  { label: "Calendar", icon: CalendarDays, href: "/calendar" },
+  { label: "Reminders", icon: Bell, href: "/reminders" },
+  { label: "Personal Care", icon: ShowerHead, href: "/personal-care" },
   { label: "DSA", icon: Code },
 ];
 

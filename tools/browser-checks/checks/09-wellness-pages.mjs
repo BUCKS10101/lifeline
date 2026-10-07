@@ -89,7 +89,8 @@ try {
   check("the card shows one line per metric, with today's values from the API and the goals", cardRows.sleep === `Sleep ${fmtMin(t.sleep.entry.durationMinutes)} of 8 h` && cardRows.water === `Water ${fmtMl(t.water.totalMl)} of 2.5 L` && cardRows.protein === `Protein ${fmtG(t.protein.totalG)} of 140 g`, J(cardRows));
   check("no inline logging on the dashboard: the card's only control is the Log link", (await b.eval(`document.querySelectorAll('[data-wellness-card] button, [data-wellness-card] input').length`)) === 0 && await b.has(`document.querySelector('[data-wellness-card] a[href="/wellness"]')`));
   const gridCols = await b.eval(`(() => { const card = document.querySelector('[data-wellness-card]'); const grid = card.closest('.grid'); const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length; const cards = [...grid.children].map((c) => Math.round(c.getBoundingClientRect().top)); return { cols, tops: cards }; })()`);
-  check("the Today section is two columns wide: four cards form a 2 x 2 grid", gridCols.cols === 2 && gridCols.tops.length === 4 && gridCols.tops[0] === gridCols.tops[1] && gridCols.tops[2] === gridCols.tops[3] && gridCols.tops[2] > gridCols.tops[0], J(gridCols));
+  // Five cards now (Today's schedule is real as of Phase 7): two full rows of two, then the fifth on its own row.
+  check("the Today section is two columns wide: five cards form 2 x 2 then a final row", gridCols.cols === 2 && gridCols.tops.length === 5 && gridCols.tops[0] === gridCols.tops[1] && gridCols.tops[2] === gridCols.tops[3] && gridCols.tops[2] > gridCols.tops[0] && gridCols.tops[4] > gridCols.tops[2], J(gridCols));
   await b.shot("wellness-dashboard-1280");
   await b.viewport(768, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-wellness-card]')`, "card");
   const cols768 = await b.eval(`getComputedStyle(document.querySelector('[data-wellness-card]').closest('.grid')).gridTemplateColumns.split(' ').length`);
@@ -283,7 +284,7 @@ try {
   check("the dashboard card lists only the visible metrics", J(await b.eval(`[...document.querySelectorAll('[data-wellness-card] [data-wellness-row]')].map((r) => r.dataset.wellnessRow)`)) === J(["sleep", "protein"]));
   await api.put("/api/v1/wellness/preferences", { sleepEnabled: false, waterEnabled: false, proteinEnabled: false });
   await b.goto("/dashboard"); await b.waitFor(hasText("Today's workout"), "dashboard"); await sleep(600);
-  check("with every metric hidden there is no wellness card, and the other three cards remain", !(await b.has(`document.querySelector('[data-wellness-card]')`)) && (await b.eval(`document.querySelector('[data-wellness-card]') === null && document.querySelectorAll('main section:first-of-type [data-slot=card]').length`)) === 3);
+  check("with every metric hidden there is no wellness card, and the other four cards remain (Today's schedule is real as of Phase 7)", !(await b.has(`document.querySelector('[data-wellness-card]')`)) && (await b.eval(`document.querySelector('[data-wellness-card]') === null && document.querySelectorAll('main section:first-of-type [data-slot=card]').length`)) === 4);
   for (const k of ["sleep", "protein"]) { await b.goto(`/wellness/${k}`); await b.waitFor(hasText("Everything is hidden"), "all hidden"); check(`${k} page with everything hidden goes back to Today`, (await b.url()) === "/wellness"); }
   await api.put("/api/v1/wellness/preferences", { sleepEnabled: true, waterEnabled: true, proteinEnabled: true, waterGoalMl: 2500, proteinGoalG: 140, sleepGoalMinutes: 480 });
 
