@@ -28,16 +28,21 @@ spring:
       ssl:
         enabled: ${REDIS_SSL_ENABLED:false}
   mail:
-    host: localhost
-    port: 1025
-    username: ""
-    password: ""
+    # Defaults match the local Mailhog container exactly (no auth, no TLS). In production these point at a real
+    # provider's SMTP (e.g. Resend: host smtp.resend.com, port 587, username "resend", password an API key,
+    # auth/starttls true) through SmtpEmailSender, which already reads mail config through JavaMailSender.
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
-          auth: false
+          auth: ${MAIL_SMTP_AUTH:false}
           starttls:
-            enable: false
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:false}
+          ssl:
+            enable: ${MAIL_SMTP_SSL_ENABLE:false}
 
   session:
     timeout: 7d
