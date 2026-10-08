@@ -23,6 +23,10 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      # Blank (the default) means no auth, matching the local Docker Redis, which has none.
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
   mail:
     host: localhost
     port: 1025
@@ -42,7 +46,11 @@ spring:
       repository-type: indexed
 
 server:
-  port: 8080
+  # Hosting platforms (e.g. Render) assign their own port via $PORT; local development has none set, so 8080 applies.
+  port: ${PORT:8080}
+  # Behind a TLS-terminating reverse proxy in production, this makes the framework honour X-Forwarded-* headers
+  # for scheme/host/port. With no such proxy (plain local development) it is simply never exercised.
+  forward-headers-strategy: framework
   servlet:
     session:
       cookie:
@@ -54,7 +62,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        # Only health is public-safe; info/metrics/env/beans/mappings/configprops are never exposed.
+        include: health
   endpoint:
     health:
       show-details: when-authorized
