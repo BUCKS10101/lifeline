@@ -79,3 +79,8 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   mail:
     from: ${MAIL_FROM:no-reply@personal-os.local}
+    # "smtp" (default, local Mailhog) or "resend" (production, Resend's HTTP API over HTTPS — required where the
+    # host blocks outbound SMTP ports, e.g. Render's free tier).
+    provider: ${MAIL_PROVIDER:smtp}
+    resend:
+      api-key: ${RESEND_API_KEY:}
