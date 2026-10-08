@@ -29,7 +29,7 @@ try {
   begin("1-3. Navigation, empty /habits, and empty dashboard card (a brand-new user, 390px)");
   await b.viewport(1280, 900); await b.goto("/dashboard"); await b.waitFor(`document.querySelector('a[href="/habits"]')`, "nav");
   check("Habits is a live link in the sidebar", true);
-  check("Calendar and DSA are still not links (Goals is real as of Phase 6 checkpoint 5)", !(await b.has(`document.querySelector('a[href="/calendar"], a[href="/dsa"]')`)));
+  check("DSA is still not a link (Goals, Calendar, Reminders and Personal Care are real as of Phase 6/7)", !(await b.has(`document.querySelector('a[href="/dsa"]')`)));
   await b.click(`document.querySelector('a[href="/habits"]')`, "sidebar Habits"); await b.waitFor(`location.pathname === '/habits'`, "habits page");
   check("the Habits link is marked current and the page title is set", await b.has(`document.querySelector('a[href="/habits"]').getAttribute('aria-current') === 'page'`) && (await b.eval("document.title")).includes("Habits"));
   await b.viewport(390);
@@ -40,7 +40,7 @@ try {
   await b.shot("habits-empty-390");
   await b.goto("/dashboard"); await b.waitFor(`document.querySelector('[data-habits-card]')`, "habits card");
   check("the dashboard card with nothing scheduled says so, and the placeholder 'Soon' badge is gone", await b.has(`document.querySelector('[data-nothing-scheduled]')?.innerText.includes('Nothing scheduled today')`) && !(await b.has(`[...document.querySelectorAll('main [data-slot=card]')].some((c) => c.innerText.includes('Habits today') && c.innerText.includes('Soon'))`)));
-  check("the other dashboard placeholders are untouched", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["Upcoming events", "DSA progress"].sort().join());
+  check("the other dashboard placeholders are untouched", (await b.eval(`[...document.querySelectorAll('main [data-slot=card]')].filter((c) => c.innerText.includes('Soon')).map((c) => c.innerText.split('\\n')[0].trim())`)).sort().join() === ["DSA progress"].sort().join());
 
   // ------------------------------------------------------------------------------------------------
   // Seed: a daily habit started 60 days ago with a real mix of done/missed days, a weekday-only habit, and a

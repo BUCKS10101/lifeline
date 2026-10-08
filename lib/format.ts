@@ -76,6 +76,12 @@ export function formatMonth(isoDate: string): string {
   return new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, 1)));
 }
 
+/** "October 2026": a full month name, for a calendar's own heading. Takes either a full date or a "2026-10" month. */
+export function formatMonthLong(isoDateOrMonth: string): string {
+  const [y, m] = isoDateOrMonth.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, 1)));
+}
+
 /** Today's calendar date ("2026-09-24") in the given timezone. */
 export function todayIn(timeZone: string, now: Date = new Date()): string {
   try {
