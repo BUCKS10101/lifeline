@@ -42,12 +42,12 @@ class Phase7PerformanceTest extends ApiTestBase {
                        null, 'UTC', (n %% 2 = 0), now(), now()
                 from generate_series(1, %d) as n
                 """.formatted(DAYS, DAYS), user);
-        // Reminders: one every other day for two years.
+        // Reminders share the calendar table: one every other day for two years.
         jdbc.update("""
-                insert into reminders (id, user_id, title, remind_at, zone_id, created_at, updated_at)
+                insert into calendar_events (id, user_id, title, start_at, zone_id, all_day, created_at, updated_at)
                 select gen_random_uuid(), ?, 'Reminder ' || n,
                        (date '2026-09-24' - (%d - n * 2))::timestamp at time zone 'UTC' + interval '8 hours',
-                       'UTC', now(), now()
+                       'UTC', false, now(), now()
                 from generate_series(1, %d) as n
                 """.formatted(DAYS, DAYS / 2), user);
         // Hair wash: twice a week for two years (~200 entries).
@@ -57,19 +57,19 @@ class Phase7PerformanceTest extends ApiTestBase {
                 from generate_series(0, %d - 1) as d where d %% 3 = 0
                 """.formatted(DAYS), user);
 
-        long eventCount = jdbc.queryForObject("select count(*) from calendar_events where user_id = ?", Long.class, user);
-        long reminderCount = jdbc.queryForObject("select count(*) from reminders where user_id = ?", Long.class, user);
+        long itemCount = jdbc.queryForObject("select count(*) from calendar_events where user_id = ?", Long.class, user);
         long washCount = jdbc.queryForObject("select count(*) from hair_wash_entries where user_id = ?", Long.class, user);
-        assertThat(eventCount).isEqualTo(DAYS);
-        assertThat(reminderCount).isEqualTo(DAYS / 2);
+        assertThat(itemCount).isEqualTo(DAYS + DAYS / 2);
         assertThat(washCount).isGreaterThan(200);
 
-        // The seed runs up to and including today (2026-09-24), so September 2026 has events for its first 24 days only.
+        // The seed runs up to and including today (2026-09-24): September 2026 has an event on each of its first 24 days
+        // and a reminder on every other day back from the 24th (24, 22, ..., 2), which is 12 more.
         JsonNode monthEvents = timed(c, "calendar, one month of " + DAYS + " days", "/api/v1/calendar/events?from=2026-09-01&to=2026-09-30");
-        assertThat(monthEvents).hasSize(24);
+        assertThat(monthEvents).hasSize(24 + 12);
 
-        JsonNode reminders = timed(c, "reminders, full list (" + (DAYS / 2) + ")", "/api/v1/reminders?includeCompleted=true");
-        assertThat(reminders).hasSize((int) reminderCount);
+        // Calendar events and reminders are one list seen two ways, so the reminders screen lists every item.
+        JsonNode reminders = timed(c, "reminders, full list (" + itemCount + ")", "/api/v1/reminders?includeCompleted=true");
+        assertThat(reminders).hasSize((int) itemCount);
 
         JsonNode washSummary = timed(c, "hair wash, summary + one month", "/api/v1/personal-care/hair-wash?month=2026-09");
         assertThat(washSummary.get("lastWashedOn").isNull()).isFalse();

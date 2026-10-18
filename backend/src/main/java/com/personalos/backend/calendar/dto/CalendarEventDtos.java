@@ -46,7 +46,7 @@ public final class CalendarEventDtos {
      * be (an explicit {@code null}); {@code startDate}, {@code startTime} and {@code allDay} can be replaced but not
      * cleared. The timezone an event was created in never changes. JSON cannot tell "left out" from "null" once bound
      * to a plain record, so the body is read as a JSON object and each field is looked up (the same trick as the
-     * tasks, habits and goals modules' partial edits).
+     * reminders module's partial edits).
      */
     public record UpdateEventRequest(Patch<String> title, Patch<String> description, Patch<LocalDate> startDate,
                                      Patch<String> startTime, Patch<LocalDate> endDate, Patch<String> endTime, Patch<Boolean> allDay) {
@@ -85,5 +85,5 @@ public final class CalendarEventDtos {
      */
     public record CalendarEventResponse(UUID id, String title, String description, LocalDate startDate, String startTime,
                                         LocalDate endDate, String endTime, boolean allDay, String timeZone,
-                                        Instant startAt, Instant endAt) {}
+                                        Instant startAt, Instant endAt, Instant completedAt) {}
 }

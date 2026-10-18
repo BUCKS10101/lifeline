@@ -42,7 +42,48 @@ class ReminderApiTest extends ApiTestBase {
     }
 
     private int rows(UUID user) {
-        return jdbc.queryForObject("select count(*) from reminders where user_id = ?", Integer.class, user);
+        return jdbc.queryForObject("select count(*) from calendar_events where user_id = ?", Integer.class, user);
+    }
+
+    // ---- one shared list with the calendar -----------------------------------------------------
+
+    @Test
+    void aReminderShowsOnTheCalendarAndACalendarEventShowsAsAReminder() throws Exception {
+        TestClient c = newUser("a@example.com");
+        String reminderId = expect(c, post(c, body("Call mom", "2026-10-01", "09:00")), 201).get("id").asText();
+        String eventId = expect(c, c.post("/api/v1/calendar/events",
+                Map.of("title", "Dentist", "startDate", "2026-10-02", "startTime", "14:00", "endDate", "2026-10-02", "endTime", "15:00")), 201)
+                .get("id").asText();
+
+        List<String> onCalendar = new ArrayList<>();
+        expect(c, c.get("/api/v1/calendar/events?from=2026-10-01&to=2026-10-31"), 200).forEach(e -> onCalendar.add(e.get("title").asText()));
+        assertThat(onCalendar).containsExactlyInAnyOrder("Call mom", "Dentist");
+        assertThat(titles(c, "")).containsExactly("Call mom", "Dentist");
+
+        // Ticking it off on the reminders screen shows on the calendar too, and reopening undoes it.
+        JsonNode done = expect(c, c.post(REMINDERS + "/" + eventId + "/complete", Map.of()), 200);
+        assertThat(done.get("completedAt").isNull()).isFalse();
+        JsonNode calendarItem = null;
+        for (JsonNode e : expect(c, c.get("/api/v1/calendar/events?from=2026-10-02&to=2026-10-02"), 200)) calendarItem = e;
+        assertThat(calendarItem.get("completedAt").isNull()).isFalse();
+        expect(c, c.post(REMINDERS + "/" + eventId + "/reopen", Map.of()), 200);
+
+        // Deleting from either side removes it from both.
+        assertThat(c.delete("/api/v1/calendar/events/" + reminderId).getResponse().getStatus()).isEqualTo(204);
+        assertThat(titles(c, "")).containsExactly("Dentist");
+    }
+
+    @Test
+    void editingTheTimeOfAnEventWithAnEndKeepsItsLength() throws Exception {
+        TestClient c = newUser("a@example.com");
+        String id = expect(c, c.post("/api/v1/calendar/events",
+                Map.of("title", "Dentist", "startDate", "2026-10-02", "startTime", "14:00", "endDate", "2026-10-02", "endTime", "15:00")), 201)
+                .get("id").asText();
+        JsonNode moved = expect(c, c.patch(REMINDERS + "/" + id, Map.of("time", "16:00")), 200);
+        assertThat(moved.get("time").asText()).isEqualTo("16:00");
+        JsonNode item = expect(c, c.get("/api/v1/calendar/events?from=2026-10-02&to=2026-10-02"), 200).get(0);
+        assertThat(item.get("startTime").asText()).isEqualTo("16:00");
+        assertThat(item.get("endTime").asText()).isEqualTo("17:00");
     }
 
     // ---- creating ------------------------------------------------------------------------------

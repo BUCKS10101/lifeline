@@ -3,31 +3,41 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/components/fitness/empty-state";
 import { EventSheet } from "@/components/calendar/event-sheet";
 import { Button } from "@/components/ui/button";
 import { formatFullDate, formatMonthLong } from "@/lib/format";
 import type { CalendarEvent } from "@/lib/calendar-types";
-import type { Reminder } from "@/lib/reminder-types";
+import { apiPost } from "@/lib/client-api";
 import { monthGrid, shiftMonth, WEEKDAY_LABELS } from "@/lib/month-grid";
 import { cn } from "@/lib/utils";
 
 /**
- * A lightweight month calendar: pick a date, see that day's events and any reminders due that day, and add, edit or
- * delete an event. No recurrence, no attendees. Reminders shown here are read-only; managing them happens on their
- * own page.
+ * A lightweight month calendar: pick a date, see that day's items, and add, edit, tick off or delete one. No
+ * recurrence, no attendees. Reminders are these same items, so anything added here also lists on the reminders screen
+ * and anything added there shows here.
  */
-export function CalendarView({ month, selectedDate, today, events, remindersOnDate }: {
+export function CalendarView({ month, selectedDate, today, events }: {
   month: string;
   selectedDate: string;
   today: string;
   events: CalendarEvent[];
-  remindersOnDate: Reminder[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<CalendarEvent | null>(null);
   const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function toggleDone(e: CalendarEvent) {
+    setBusy(e.id);
+    try {
+      await apiPost(`/api/v1/reminders/${e.id}/${e.completedAt === null ? "complete" : "reopen"}`);
+      router.refresh();
+    } finally {
+      setBusy(null);
+    }
+  }
 
   const days = monthGrid(month);
   const eventsByDate = new Map<string, CalendarEvent[]>();
@@ -104,40 +114,38 @@ export function CalendarView({ month, selectedDate, today, events, remindersOnDa
           <Button type="button" className="h-11 px-4" onClick={() => setCreating(true)}><Plus aria-hidden />Add event</Button>
         </div>
 
-        {selectedEvents.length === 0 && remindersOnDate.length === 0 ? (
+        {selectedEvents.length === 0 ? (
           <EmptyState title="Nothing on this day">Add an event above.</EmptyState>
         ) : (
-          <div className="flex flex-col gap-3">
-            {selectedEvents.length > 0 && (
-              <ul className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card" data-event-list>
-                {selectedEvents.map((e) => (
-                  <li key={e.id}>
-                    <button type="button" onClick={() => setEditing(e)} data-event-row data-id={e.id}
-                      className="flex min-h-14 w-full flex-col justify-center gap-0.5 px-4 py-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset">
-                      <span className="text-base leading-snug wrap-anywhere">{e.title}</span>
-                      <span className="num text-sm text-muted-foreground">
-                        {e.allDay ? "All day" : e.endTime ? `${e.startTime} – ${e.endTime}` : e.startTime}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {remindersOnDate.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Reminders</h3>
-                <ul className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card" data-reminder-list>
-                  {remindersOnDate.map((r) => (
-                    <li key={r.id} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2" data-reminder-row data-id={r.id}>
-                      <span className="min-w-0 flex-1 wrap-anywhere">{r.title}</span>
-                      <span className="num shrink-0 text-sm text-muted-foreground">{r.time}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/reminders" className="inline-flex h-11 w-fit items-center self-start text-sm text-muted-foreground hover:text-foreground hover:underline">Manage reminders</Link>
-              </div>
-            )}
-          </div>
+          <ul className="flex flex-col divide-y overflow-hidden rounded-lg border bg-card" data-event-list>
+            {selectedEvents.map((e) => {
+              const done = e.completedAt !== null;
+              return (
+                <li key={e.id} className="flex items-center gap-1 pl-1">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={done}
+                    aria-label={done ? `Reopen: ${e.title}` : `Mark done: ${e.title}`}
+                    disabled={busy === e.id}
+                    onClick={() => void toggleDone(e)}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                  >
+                    <span className={cn("flex size-6 items-center justify-center rounded-full border-2 transition-colors", done ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/60")}>
+                      {done && <Check className="size-3.5" aria-hidden />}
+                    </span>
+                  </button>
+                  <button type="button" onClick={() => setEditing(e)} data-event-row data-id={e.id}
+                    className="flex min-h-14 min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 py-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset">
+                    <span className={cn("text-base leading-snug wrap-anywhere", done && "text-muted-foreground line-through")}>{e.title}</span>
+                    <span className="num text-sm text-muted-foreground">
+                      {e.allDay ? "All day" : e.endTime ? `${e.startTime} – ${e.endTime}` : e.startTime}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
 

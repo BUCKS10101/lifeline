@@ -2,12 +2,9 @@ import { Code } from "lucide-react";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { BodyWeightCard } from "@/components/dashboard/body-weight-card";
 import { EmptyCard } from "@/components/dashboard/empty-card";
-import { GoalsCard } from "@/components/dashboard/goals-card";
 import { PersonalCareCard } from "@/components/dashboard/personal-care-card";
 import { TodaysScheduleCard } from "@/components/dashboard/todays-schedule-card";
 import { TodaysWorkoutCard } from "@/components/dashboard/todays-workout-card";
-import { HabitsTodayCard } from "@/components/dashboard/habits-today-card";
-import { TasksDueCard } from "@/components/dashboard/tasks-due-card";
 import { UpcomingRemindersCard } from "@/components/dashboard/upcoming-reminders-card";
 import { WellnessTodayCard } from "@/components/dashboard/wellness-card";
 import { requireUser } from "@/lib/backend";
@@ -36,8 +33,6 @@ export default async function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <TodaysWorkoutCard timezone={user.timezone} />
           <WellnessTodayCard />
-          <TasksDueCard />
-          <HabitsTodayCard />
           <TodaysScheduleCard timezone={user.timezone} />
         </div>
       </section>
@@ -59,7 +54,6 @@ export default async function DashboardPage() {
             description="Problems solved and recent activity."
             module="DSA"
           />
-          <GoalsCard />
           <PersonalCareCard today={todayIn(user.timezone)} />
         </div>
       </section>

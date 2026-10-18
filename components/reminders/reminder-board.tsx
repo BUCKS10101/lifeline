@@ -13,8 +13,11 @@ import { formatFullDate } from "@/lib/format";
 import type { Reminder } from "@/lib/reminder-types";
 import { cn } from "@/lib/utils";
 
-/** The reminders list: pending first (soonest first), completed ones behind a toggle. Completing/reopening is one tap. */
-export function ReminderBoard({ reminders, showCompleted }: { reminders: Reminder[]; showCompleted: boolean }) {
+/**
+ * The reminders list: every calendar item as a to-do (pending first, soonest first), completed ones behind a toggle.
+ * Anything added here also shows on the calendar, and anything added there shows here. Completing/reopening is one tap.
+ */
+export function ReminderBoard({ reminders, showCompleted, today }: { reminders: Reminder[]; showCompleted: boolean; today: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +74,7 @@ export function ReminderBoard({ reminders, showCompleted }: { reminders: Reminde
                   <span className={cn("text-base leading-snug wrap-anywhere", done && "text-muted-foreground line-through")}>{r.title}</span>
                   <span className="num flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
                     {r.due && !done && <span className="font-medium text-foreground" data-due-label>Due · </span>}
-                    {formatFullDate(r.date)} · {r.time}
+                    {formatFullDate(r.date)} · {r.allDay ? "All day" : r.time}
                   </span>
                 </button>
               </li>
@@ -83,7 +86,7 @@ export function ReminderBoard({ reminders, showCompleted }: { reminders: Reminde
       <ReminderSheet
         reminder={sheet === "new" || sheet === "closed" ? null : sheet}
         open={sheet !== "closed"}
-        defaultDate={null}
+        defaultDate={today}
         onClose={() => setSheet("closed")}
         onChanged={() => router.refresh()}
       />

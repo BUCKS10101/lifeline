@@ -62,5 +62,5 @@ public final class ReminderDtos {
 
     /** {@code due} is derived: pending (not completed) and its moment has arrived. {@code timeZone} never changes after creation. */
     public record ReminderResponse(UUID id, String title, LocalDate date, String time, String timeZone,
-                                   Instant remindAt, Instant completedAt, boolean due) {}
+                                   Instant remindAt, Instant completedAt, boolean due, boolean allDay) {}
 }
