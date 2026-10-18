@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Personal OS",
-  description: "A personal operating system for fitness, DSA, tasks, habits and goals.",
+  description: "A personal operating system for fitness, DSA, calendar and reminders.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

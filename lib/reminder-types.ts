@@ -1,4 +1,4 @@
-/** Types mirroring the backend's reminder DTOs. `due` is derived by the backend: pending and its moment has arrived. */
+/** Types mirroring the backend's reminder DTOs. A reminder is a calendar event seen as a to-do. `due` is derived by the backend: pending and its moment has arrived. */
 
 export type Reminder = {
   id: string;
@@ -9,4 +9,5 @@ export type Reminder = {
   remindAt: string;
   completedAt: string | null;
   due: boolean;
+  allDay: boolean;
 };

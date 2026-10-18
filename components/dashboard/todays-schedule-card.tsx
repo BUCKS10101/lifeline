@@ -6,7 +6,7 @@ import { backendGet } from "@/lib/backend";
 import type { CalendarEvent } from "@/lib/calendar-types";
 import { todayIn } from "@/lib/format";
 
-/** The dashboard's "Today's schedule" card: today's calendar events. Read-only, the same rule as Tasks due and Habits today. */
+/** The dashboard's "Today's schedule" card: today's calendar events. Read-only: the dashboard only links out. */
 export async function TodaysScheduleCard({ timezone }: { timezone: string }) {
   const today = todayIn(timezone);
   const result = await backendGet<CalendarEvent[]>(`/api/v1/calendar/events?from=${today}&to=${today}`);

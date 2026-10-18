@@ -13,4 +13,6 @@ export type CalendarEvent = {
   timeZone: string;
   startAt: string;
   endAt: string | null;
+  /** Set once ticked off. Reminders are the same records, so this is what the reminders screen reads too. */
+  completedAt: string | null;
 };

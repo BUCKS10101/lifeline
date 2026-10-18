@@ -150,7 +150,7 @@ public class CalendarEventService {
         return new CalendarEventResponse(row.id(), row.title(), row.description(), start.toLocalDate(),
                 row.allDay() ? null : formatTime(start.toLocalTime()), end == null ? null : end.toLocalDate(),
                 (row.allDay() || end == null) ? null : formatTime(end.toLocalTime()), row.allDay(), row.zoneId(),
-                row.startAt(), row.endAt());
+                row.startAt(), row.endAt(), row.completedAt());
     }
 
     private static String formatTime(LocalTime time) {

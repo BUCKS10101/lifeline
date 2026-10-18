@@ -27,10 +27,7 @@ The app follows a modular monolith design rather than premature microservices.
 - auth
 - users
 - fitness
-- goals
-- tasks
-- habits
-- calendar
+- calendar (events and reminders share one record, shown on both screens)
 - reminders
 - dsa
 - analytics

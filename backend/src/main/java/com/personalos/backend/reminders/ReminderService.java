@@ -19,7 +19,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Lightweight reminders: a title and a moment to go off at. No delivery infrastructure; LifeLine only surfaces what is due or upcoming. */
+/**
+ * Reminders: calendar events seen as a to-do list (a title, a moment, and a done tick). They live in the same table
+ * as calendar events, so the two screens always agree. No delivery infrastructure; LifeLine only surfaces what is due
+ * or upcoming.
+ */
 @Service
 public class ReminderService {
 
@@ -115,7 +119,7 @@ public class ReminderService {
         var zoned = row.remindAt().atZone(zone);
         boolean due = row.completedAt() == null && !row.remindAt().isAfter(now);
         return new ReminderResponse(row.id(), row.title(), zoned.toLocalDate(), formatTime(zoned.toLocalTime()),
-                row.zoneId(), row.remindAt(), row.completedAt(), due);
+                row.zoneId(), row.remindAt(), row.completedAt(), due, row.allDay());
     }
 
     private static String formatTime(LocalTime time) {

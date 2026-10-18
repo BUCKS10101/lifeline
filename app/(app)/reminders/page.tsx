@@ -3,6 +3,7 @@ import { ReminderBoard } from "@/components/reminders/reminder-board";
 import { BackendUnavailable } from "@/components/shell/backend-unavailable";
 import { PageHeader } from "@/components/shell/page-header";
 import { backendGet, requireUser, resolve } from "@/lib/backend";
+import { todayIn } from "@/lib/format";
 import type { Reminder } from "@/lib/reminder-types";
 
 export const metadata = { title: "Reminders | Personal OS" };
@@ -20,7 +21,7 @@ export default async function RemindersPage(props: PageProps<"/reminders">) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <PageHeader title="Reminders" />
-      <ReminderBoard reminders={reminders} showCompleted={showCompleted} />
+      <ReminderBoard reminders={reminders} showCompleted={showCompleted} today={todayIn(user.timezone)} />
       <div className="flex justify-center">
         <Link href={showCompleted ? "/reminders" : "/reminders?completed=1"} className="inline-flex h-11 items-center text-sm text-muted-foreground hover:text-foreground hover:underline">
           {showCompleted ? "Hide completed reminders" : "Show completed reminders"}

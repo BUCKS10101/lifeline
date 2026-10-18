@@ -20,7 +20,7 @@ import java.util.UUID;
 @Repository
 public class CalendarEventRepository {
 
-    private static final String SELECT = "SELECT id, title, description, start_at, end_at, zone_id, all_day FROM calendar_events";
+    private static final String SELECT = "SELECT id, title, description, start_at, end_at, zone_id, all_day, completed_at FROM calendar_events";
 
     private final JdbcClient jdbc;
 
@@ -28,13 +28,15 @@ public class CalendarEventRepository {
         this.jdbc = jdbc;
     }
 
-    public record Row(UUID id, String title, String description, Instant startAt, Instant endAt, String zoneId, boolean allDay) {}
+    public record Row(UUID id, String title, String description, Instant startAt, Instant endAt, String zoneId, boolean allDay,
+                      Instant completedAt) {}
 
     private static Row map(ResultSet rs, int n) throws SQLException {
         Timestamp end = rs.getTimestamp("end_at");
+        Timestamp completed = rs.getTimestamp("completed_at");
         return new Row(rs.getObject("id", UUID.class), rs.getString("title"), rs.getString("description"),
                 rs.getTimestamp("start_at").toInstant(), end == null ? null : end.toInstant(),
-                rs.getString("zone_id"), rs.getBoolean("all_day"));
+                rs.getString("zone_id"), rs.getBoolean("all_day"), completed == null ? null : completed.toInstant());
     }
 
     public Optional<Row> find(UUID userId, UUID id) {
