@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PendingHint } from "@/components/auth/pending-hint";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/client-api";
 
@@ -52,9 +53,12 @@ export function SelectField(
 
 export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
   return (
-    <Button type="submit" size="lg" className="h-12 text-base font-semibold" disabled={pending}>
-      {pending ? "Please wait..." : children}
-    </Button>
+    <>
+      <Button type="submit" size="lg" className="h-12 text-base font-semibold" disabled={pending}>
+        {pending ? "Please wait..." : children}
+      </Button>
+      {pending && <PendingHint />}
+    </>
   );
 }
 
